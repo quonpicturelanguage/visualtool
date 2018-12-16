@@ -1,7 +1,25 @@
 
-QuonUtils = {}
+/**
+ * @constructor
+ */
+function QuonUtils(){
 
-QuonUtils.GateList = {
+}
+
+/**
+ * the process of render regexp
+ */
+QuonUtils.prototype.init = function(){
+    Object.keys(this.GateSourcePattern).forEach(v => {
+        this.GatePattern[v] = this.regexReplace(this.GateList[v], this.GateSourcePattern[v])
+    })
+    return this
+}
+
+/**
+ * each type contains gates
+ */
+QuonUtils.prototype.GateList = {
     'Measure': ['mz', 'mx', 'my'],
     'ControlGate': ['cnot', 'cx', 'cy', 'cz'],
     'MeausreControlGate': ['mcx', 'mcy', 'mcz'],
@@ -11,7 +29,11 @@ QuonUtils.GateList = {
     'SingleBitGate': ['i', 'x', 'y', 'z', 'h', 's', 'sd', 't', 'td', 'rx', 'ry', 'rz'],
 }
 
-QuonUtils.GateSourcePattern = {
+/**
+ * TBD will be replaced by the gate list splited with '|'
+ * PINT(positive integer) and NUMBER will be replaced by their regexp pattern
+ */
+QuonUtils.prototype.GateSourcePattern = {
     'Measure': /^(TBD)(NUMBER)?$/,
     'ControlGate': /^(TBD)(PINT)(?:_(NUMBER))?$/,
     'MeausreControlGate': /^(TBD)(PINT)(?:_(NUMBER))?$/,
@@ -21,7 +43,12 @@ QuonUtils.GateSourcePattern = {
     'SingleBitGate': /^(TBD)(?:NUMBER|(?:PINT)(?:_NUMBER)?)$/,
 }
 
-QuonUtils.regexReplace = function (gatelist, regex) {
+/**
+ * fill the template regexp with the right content 
+ * @param {String[]} gatelist 
+ * @param {RegExp} regex 
+ */
+QuonUtils.prototype.regexReplace = function (gatelist, regex) {
     return new RegExp(regex.source
         .replace(/TBD/g, gatelist.join('|').toLowerCase())
         .replace(/PINT/g, /[1-9]\d*/.source)
@@ -30,25 +57,35 @@ QuonUtils.regexReplace = function (gatelist, regex) {
     )
 }
 
-QuonUtils.GatePattern = {}
-Object.keys(QuonUtils.GateSourcePattern).forEach(v => {
-    QuonUtils.GatePattern[v] = QuonUtils.regexReplace(QuonUtils.GateList[v], QuonUtils.GateSourcePattern[v])
-})
+/**
+ * @property {[x:String]: RegExp}
+ */
+QuonUtils.prototype.GatePattern = {}
 
-QuonUtils.parseNUMBER = function (str) {
-    return parseFloat(str | '0')
+/**
+ * parse a string to number or numm to 0
+ * @param {String|*} str 
+ */
+QuonUtils.prototype.parseNUMBER = function (str) {
+    return parseFloat(str || '0')
 }
 
-
-QuonUtils.twoBitGatePairCheck = function (match, nodestr2) {
-    let match2 = QuonUtils.GatePattern['TwoBitGate'].exec(nodestr2)
+/**
+ * check whether two gate are in a pair
+ * @param {*} match 
+ * @param {String} nodestr2 
+ */
+QuonUtils.prototype.twoBitGatePairCheck = function (match, nodestr2) {
+    let match2 = this.GatePattern['TwoBitGate'].exec(nodestr2)
     if (!match2 || match[1] !== match2[1]) return false;
-    let n1 = QuonUtils.parseNUMBER(match[2])
-    let n2 = QuonUtils.parseNUMBER(match2[2])
+    let n1 = this.parseNUMBER(match[2])
+    let n2 = this.parseNUMBER(match2[2])
     if (n1 !== n2 + 1 && n1 !== n2 - 1) return false;
     if ((n1 + n2) % 4 !== 3) return false;
     return true
 }
+
+let QuonUtilsObject = new QuonUtils().init()
 
 
 /**
@@ -64,7 +101,7 @@ QVT.prototype.init = function () {
     return this
 }
 
-QVT.prototype.util = QuonUtils
+QVT.prototype.util = QuonUtilsObject
 
 QVT.prototype.error = function (any) {
     if (this.stage === 'convertToNodes') {
@@ -141,36 +178,45 @@ QVT.prototype.getNodes = function () {
     return netInfo
 }
 
+/**
+ * for each string in gatearray, build a CircuitNode at that location with the corresponding node type
+ * @param {String[][]} gateArray 
+ */
 QVT.prototype.convertToNodes = function (gateArray) {
     // let gateArray=this.gateArray;
     let util = this.util
     this.stage = 'convertToNodes'
     let bitStatus = gateArray[0].map(v => 'q') // q for quantum, c for classic, d for die
-    let bitDeep = gateArray[0].map(v => 0) // current deep for bit
+    let bitDeep = gateArray[0].map(v => 0) // current processed deep for each bit
     let nodeNet = {}
     let nodeLink = []
     for (var dd = 0; dd < gateArray.length; dd++) {
         for (var ii = 0; ii < gateArray[0].length; ii++) {
             if (dd !== bitDeep[ii]) continue;
             this.stageInfo = { ii: ii, dd: dd, gatestr: gateArray[dd][ii] }
-            let nodestr = gateArray[dd][ii] || 'i1'
+            let nodestr = gateArray[dd][ii] || 'i1' // '' equal to 'i1'
             if (util.GatePattern['Measure'].test(nodestr)) {
+                // if it is a measure operator
+                if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
                 nodeNet[dd + ',' + ii] = new CircuitNode().init(ii, dd).measure(nodestr)
                 bitStatus[ii] = 'c'
                 continue
             }
             if (util.GatePattern['SingleBitGate'].test(nodestr)) {
+                // if it is a Single Bit Gate
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
                 nodeNet[dd + ',' + ii] = new CircuitNode().init(ii, dd).single(nodestr)
                 continue
             }
             if (util.GatePattern['ControlGate'].test(nodestr)) {
+                // if it is a two Bit Gate: Control Gate
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
                 let match = util.GatePattern['ControlGate'].exec(nodestr)
                 let bit2Index = -1;
+                // find the other bit in the pair
                 for (let jj = 0; jj < gateArray[0].length; jj++) {
                     if (dd !== bitDeep[jj]) continue;
                     if (util.twoBitGatePairCheck(match, gateArray[dd][jj])) {
@@ -187,9 +233,11 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 continue
             }
             if (util.GatePattern['MeausreControlGate'].test(nodestr)) {
+                // if it is a Meausre Control Gate
                 bitDeep[ii]++
                 let match = util.GatePattern['MeausreControlGate'].exec(nodestr)
                 let bit2Index = -1;
+                // find the other bit in the pair
                 for (let jj = 0; jj < gateArray[0].length; jj++) {
                     if (dd !== bitDeep[jj]) continue;
                     if (util.twoBitGatePairCheck(match, gateArray[dd][jj])) {
@@ -200,7 +248,9 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 let nodestr2 = gateArray[dd][bit2Index]
                 bitDeep[bit2Index]++
                 let isControlBit = util.parseNUMBER(match[3]) % 2 == 1
+                // the control bit must be classic
                 if (isControlBit && bitStatus[ii] !== 'c' || !isControlBit && bitStatus[bit2Index] !== 'c') this.error('bit has not been measured');
+                // the target bit must be quantum
                 if (isControlBit && bitStatus[bit2Index] !== 'q' || !isControlBit && bitStatus[ii] !== 'q') this.error('bit has been measured');
                 nodeNet[dd + ',' + ii] = new CircuitNode().init(ii, dd).meausreControl(nodestr, nodestr2, isControlBit)
                 nodeNet[dd + ',' + bit2Index] = new CircuitNode().init(bit2Index, dd).meausreControl(nodestr2, nodestr, !isControlBit)
@@ -238,7 +288,7 @@ CircuitNode.prototype.init = function (bitIndex, deep) {
     return this
 }
 
-CircuitNode.prototype.util = QuonUtils
+CircuitNode.prototype.util = QuonUtilsObject
 
 /**
  * 
@@ -283,4 +333,3 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, isControlBit
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT
 exports.CircuitNode = CircuitNode
-exports.QuonUtils = QuonUtils
