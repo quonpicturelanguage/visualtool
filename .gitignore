@@ -2,6 +2,8 @@
 .vscode
 ~$*
 
+node_modules/
+
 # =========================
 # Operating System Files
 # =========================

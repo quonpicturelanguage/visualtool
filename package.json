@@ -1,0 +1,23 @@
+{
+    "name": "quon-visual-tool",
+    "displayName": "Quon Visual Tool",
+    "description": "a visual tool for quon language",
+    "version": "0.0.1",
+    "publisher": "zhaouv",
+    "homepage": "http://uvvisit.top/quon-visual-tool/",
+    "repository": {
+        "type" : "git",
+        "url" : "http://uvvisit.top:10101/r/quon-visual-tool.git"
+    },
+    "bugs":{"url":"http://path/to/bug","email":"bug@example.com"},
+    "main": "./src/main",
+    "scripts": {
+        "start": "node ./src/main.js",
+        "compile": "tsc -p ./",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+    }
+}
