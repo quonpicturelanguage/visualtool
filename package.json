@@ -13,8 +13,8 @@
     "main": "./src/main",
     "scripts": {
         "start": "node ./src/main.js",
-        "compile": "tsc -p ./",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+        "compile": "",
+        "test": "node ./src/test.js"
     },
     "dependencies": {
     },

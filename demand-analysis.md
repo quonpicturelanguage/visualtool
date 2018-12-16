@@ -20,11 +20,12 @@ mcx1_1 mcx2
 
 circult demo:
 ```
-h,cx1,   ,   ,  ,
- ,cx2,cx3,   ,  ,
- ,   ,cx4,cx5,  ,
- ,   ,   ,cx6,mx,mcz1
- ,   ,   ,   ,  ,mcz2
+h  ,   ,    ,    
+cx1,cx2,    ,    
+   ,cx3,cx4 ,    
+   ,   ,cx5 ,cx6 
+   ,   ,    ,mx  
+   ,   ,mcy2,mcy1
 ```
 
 cnot cz 似乎也有需要指定的要素
