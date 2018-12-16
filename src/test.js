@@ -1,10 +1,13 @@
-if (typeof require === "undefined") {
-    let QVT = exports.QVT
+if (typeof require === "function") {
+    var QVT = require('./main.js').QVT
+    var CircuitNode = require('./main.js').CircuitNode
 } else {
-    let QVT = require('./main.js').QVT
+    var QVT = exports.QVT
+    var CircuitNode = exports.CircuitNode
 }
 
-let qvt = new QVT()
+let qvt = new QVT().init()
+let ccc = new CircuitNode().init(0,0)
 
 qvt.setInput(`
 h
@@ -16,10 +19,10 @@ cx1,cx2
 `)
 
 console.log(qvt.rawInput)
-console.log(qvt.formatInput())
+console.log(qvt.getFormatInput())
 
-console.log(qvt.bitNumber)
 console.log(qvt.gateArray)
 
+console.log(qvt.getNodes())
 
 
