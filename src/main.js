@@ -330,6 +330,40 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, isControlBit
     return this
 }
 
+/**
+ * @constructor
+ */
+function CircuitLine() {
+    
+}
+
+CircuitLine.prototype.init = function (linemode, points) {
+    this.linemode = linemode
+    this.points = points
+
+    return this
+}
+
+CircuitLine.prototype.Line={}
+
+/**
+ * 1 > 2
+ * directly line to
+ * 
+ * 1 - 2
+ */
+CircuitLine.prototype.Line.direct=()=>[['M',[1,0]],['L',[0,1]]]
+
+/**
+ * 1 > 2
+ * Bézier curve, equal to direct when a0=0. 
+ * 
+ * 1 - 2
+ * |   |
+ * 4 - 3
+ */
+CircuitLine.prototype.Line.simpleCurve=(a0)=>[['M',[1,0,0,0]],['C',[0.5*(1-a),0.5*(1-a),0.5*a,0.5*a],[0,1,0,0]]]
+
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT
 exports.CircuitNode = CircuitNode
