@@ -242,11 +242,11 @@ QVT.prototype.convertToNodes = function (gateArray) {
     let bitDeep = gateArray[0].map(v => 0) // current processed deep for each bit
     let nodeNet = {}
     let nodeLink = []
-    let s = function (deep, bitIndex) {
+    let s = (deep, bitIndex) => {
         return util.di2s(deep, bitIndex)
     }
-    for (var dd = 0; dd < gateArray.length; dd++) {
-        for (var ii = 0; ii < gateArray[0].length; ii++) {
+    for (let dd = 0; dd < gateArray.length; dd++) {
+        for (let ii = 0; ii < gateArray[0].length; ii++) {
             if (dd !== bitDeep[ii]) continue;
             this.stageInfo = { ii: ii, dd: dd, gatestr: gateArray[dd][ii] }
             let nodestr = gateArray[dd][ii] || 'i1' // '' equal to 'i1'
@@ -319,7 +319,60 @@ QVT.prototype.convertToNodes = function (gateArray) {
     return [nodeNet, nodeLink]
 }
 
+QVT.prototype.buildNodePosition = function () {
+    for (let node in this.nodeNet) {
+        this.nodeNet[node].buildPosition()
+    }
+}
 
+QVT.prototype.getLines = function () {
+    let linesInfo = this.generateLines(this.gateArray, this.nodeNet)
+    this.circuitLines = linesInfo[0]
+    this.pictureLines = linesInfo[1]
+    return linesInfo
+}
+
+QVT.prototype.generateLines = function (gateArray, nodeNet) {
+    this.stage = 'generateLines'
+    let circuitLines = {}
+    let pictureLines = []
+    let indexArray = [1, 2, 3, 4, 5, 6, 7, 8]
+    let mapTypeArray = ['in', 'out']
+    let n = (deep, bitIndex) => {
+        return nodeNet[this.util.di2s(deep, bitIndex)]
+    }
+    let l = (node, realIndex, mapType) => {
+        return node.getMap(mapType, realIndex)
+    }
+    let for4 = (dd, ii, realIndex, mapType) => {
+        let node = n(dd, ii)
+        /**
+         * @type {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }}
+         */
+        let link = l(node, realIndex, mapType)
+
+        if (!link.draw) return;
+        let pl = new PictureLine().init(node, realIndex, link)
+        pictureLines.push(pl)
+
+        if (!link.line) return;
+        //todo
+
+
+    }
+    for (let dd = 0; dd < gateArray.length; dd++) {
+        for (let ii = 0; ii < gateArray[0].length; ii++) {
+            indexArray.forEach(realIndex => {
+                mapTypeArray.forEach(mapType => {
+                    for4(dd, ii, realIndex, mapType)
+                })
+            })
+        }
+    }
+
+    this.stage = ''
+    return [circuitLines, pictureLines]
+}
 
 
 
@@ -345,14 +398,21 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
     this.SELF = this
     this.NO = null
 
-    this.innernalMap = {}
-    this.externalMap = {}
+    this.innernalLink = {}
+    this.externalLink = {}
     this.indexMap = {}
     let linkArray = [1, 2, 3, 4, 5, 6, 7, 8]
     linkArray.forEach(v => {
-        this.innernalMap[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
-        this.externalMap[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
+        this.innernalLink[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
+        this.externalLink[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
         this.indexMap[v] = v
+    })
+
+    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+    mapArray.forEach((v, i) => {
+        // rebuild map
+        if (this.deep) this.indexMap[v[0]] = this.nodeNet[this.util.di2s(this.deep - 1, this.bitIndex)].indexMap[v[1]] - 4;
+        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
     })
 
     return this
@@ -363,9 +423,10 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
  */
 CircuitNode.prototype.clear = function () {
     delete (this.nodeNet)
-    delete (this.innernalMap)
-    delete (this.externalMap)
+    delete (this.innernalLink)
+    delete (this.externalLink)
     delete (this.SELF)
+    delete (this.rawArg)
 }
 
 CircuitNode.prototype.error = function (any) {
@@ -376,20 +437,41 @@ CircuitNode.prototype.error = function (any) {
 
 CircuitNode.prototype.util = QuonUtilsObject
 
+
+CircuitNode.prototype.buildPosition = function () {
+    // should be executed after nodeNet before circuitLines
+    this.position = {}
+
+    let positionIndexArray = [1, 2, 3, 4, 5, 6, 7, 8]
+    positionIndexArray.forEach(v => {
+        this.position[this.indexMap[v]] = this.calculatePosition(this.deep, this.bitIndex, v)
+    })
+}
+
+CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
+    if (positionIndex <= 4)
+        return [bitIndex + 0.25 + (positionIndex - 1) * 0.5 / 3, deep + 1];
+    else
+        return this.calculatePosition(deep + 1, bitIndex, positionIndex - 4);
+}
+
+
 /**
- * get innernalMap or innernalMap, query from nodeNet instead of return the deep and the bitIndex
+ * get innernalLink or innernalLink, query from nodeNet instead of return the deep and the bitIndex
  * draw: [functionname:String,args:Array,zIndex:Number]
  * @param {String} type in ['in','out']
- * @param {Number} arg in 1~8
+ * @param {Number} realIndex in 1~8
+ * @returns {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[] }}
  */
-CircuitNode.prototype.getMap = function (type, arg) {
-    let thismap = { in: this.innernalMap, out: this.externalMap }[type]
+CircuitNode.prototype.getMap = function (type, realIndex) {
+    let thismap = { in: this.innernalLink, out: this.externalLink }[type]
     if (!thismap) this.error(`type ${type} error`);
-    let info = Object.assign({}, thismap[arg])
+    let info = Object.assign({}, thismap[realIndex])
     if (info.targetNode instanceof Array) {
         if (this.nodeNet == null) this.error('nodeNet equal to null');
         info.targetNode = this.nodeNet[this.util.di2s(info.targetNode[0], info.targetNode[1])]
     }
+    return info
 }
 
 /**
@@ -400,10 +482,12 @@ CircuitNode.prototype.measure = function (nodestr) {
     this.rawArg = [nodestr]
     let match = this.util.GateMatch.Measure(nodestr)
     this.type = match[0]
-    let a = 0.25
-    let b = 0.2
+    let a = 0.12
+    let b = 0.1
     let c = 2
     let d = 1
+    let s = 's'
+    let t = 't'
     let linkArray = {
         mz: [[1, 2, b, c], [3, 4, b, d]],
         mx: [[1, 4, b, c], [2, 3, b, d]],
@@ -412,14 +496,9 @@ CircuitNode.prototype.measure = function (nodestr) {
     let args = [0.3, 0.2]
     let zIndex = [2, 1]
     linkArray.forEach(v => {
-        this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['simpleCurve', [v[2]], v[3]], line: 1 })
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['simpleCurve', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]] })
     })
     // draw: [functionname:String,args:Array,zIndex:Number]
-    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-    mapArray.forEach((v, i) => {
-        // rebuild 5~8's map
-        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-    })
     return this
 }
 
@@ -446,14 +525,9 @@ CircuitNode.prototype.single = function (nodestr) {
         }[this.type]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, charge: chargeArray[i] ^ reverseCharge })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, charge: chargeArray[i] ^ reverseCharge })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
-        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-        mapArray.forEach((v, i) => {
-            // rebuild 5~8's map
-            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-        })
     }
 
     if (['h'].indexOf(this.type) !== -1) {
@@ -468,14 +542,9 @@ CircuitNode.prototype.single = function (nodestr) {
         }[rotationType]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
-        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-        mapArray.forEach((v, i) => {
-            // rebuild 5~8's map
-            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-        })
     }
 
     if (['s', 'sd', 't', 'td'].indexOf(this.type) !== -1) {
@@ -495,14 +564,9 @@ CircuitNode.prototype.single = function (nodestr) {
         }[rotationType]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
-        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-        mapArray.forEach((v, i) => {
-            // rebuild 5~8's map
-            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-        })
     }
 
     if (['rx', 'rz'].indexOf(this.type) !== -1) {
@@ -536,14 +600,9 @@ CircuitNode.prototype.single = function (nodestr) {
         }
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
-        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-        mapArray.forEach((v, i) => {
-            // rebuild 5~8's map
-            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-        })
     }
 
     return this
@@ -564,7 +623,7 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
         let zIndex = [8, 7]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
         })
 
         // 3,4 7,8 -> 1',2' 5',6'
@@ -572,7 +631,7 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
         zIndex = [6, 5, 4, 3]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: [this.deep, bit2Index], targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: [this.deep, bit2Index], targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
         })
 
     } else {
@@ -580,16 +639,9 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
         let zIndex = [2, 1]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
         })
     }
-
-
-    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-    mapArray.forEach((v, i) => {
-        // rebuild 5~8's map
-        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-    })
     return this
 }
 
@@ -609,7 +661,7 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, bit2Index, i
     if (isControlBit) {
         markContent = markContent + ' -' + markContent
         // draw mark only
-        this.innernalMap[1] = Object.assign(this.innernalMap[1], { targetNode: [this.SELF], targetIndex: 3, draw: ['direct', [], 1], mark: markContent })
+        this.innernalLink[1] = Object.assign(this.innernalLink[1], { targetNode: this.SELF, targetIndex: 3, draw: ['direct', [], 1], mark: markContent })
         // draw: [functionname:String,args:Array,zIndex:Number]
     } else {
         let linkArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
@@ -623,16 +675,10 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, bit2Index, i
         let minusArray = ['', '', '-', '-']
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: (markArray[i] ^ reverseCharge) ? minusArray[i] + markContent : null })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: (markArray[i] ^ reverseCharge) ? minusArray[i] + markContent : null })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
-
-    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-    mapArray.forEach((v, i) => {
-        // rebuild 5~8's map
-        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
-    })
     return this
 }
 
@@ -641,20 +687,44 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, bit2Index, i
 /**
  * @constructor
  */
-function CircuitLine() {
+function PictureLine() {
 
 }
 
-CircuitLine.prototype.init = function (linemode, points) {
-    this.linemode = linemode
-    this.points = points
+/**
+ * 
+ * @param {CircuitNode} node1
+ * @param {Number} realIndex
+ * @param {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }} link 
+ */
+PictureLine.prototype.init = function (node1, realIndex, link) {
+    this.rawArg = [node1, realIndex, link]
+    let node2 = link.targetNode
+
+    this.points = link.points
+    if (!this.points) this.points = [['s', realIndex], ['t', link.targetIndex]];
+
+    this.sourcePosition = []
+    this.points.forEach(v => {
+        let node = { s: node1, t: node2 }[v[0]]
+        this.sourcePosition.push(node.position[v[1]])
+    })
+
 
     return this
 }
 
-CircuitLine.prototype.Line = {}
-CircuitLine.prototype.Charge = {}
-CircuitLine.prototype.Mark = {}
+PictureLine.prototype.clear = function () {
+    delete (this.rawArg)
+}
+
+PictureLine.prototype.render = function () {
+
+}
+
+PictureLine.prototype.Line = {}
+PictureLine.prototype.Charge = {}
+PictureLine.prototype.Mark = {}
 
 /**
  * 1 > 2
@@ -662,36 +732,36 @@ CircuitLine.prototype.Mark = {}
  * 
  * 1 - 2
  */
-CircuitLine.prototype.Line.direct = () => [['M', [1, 0]], ['L', [0, 1]]]
-CircuitLine.prototype.Charge.direct = () => [0.5, 0.5]
-CircuitLine.prototype.Mark.direct = () => [0.5, 0.5]
+PictureLine.prototype.Line.direct = () => [['M', [1, 0]], ['L', [0, 1]]]
+PictureLine.prototype.Charge.direct = () => [0.5, 0.5]
+PictureLine.prototype.Mark.direct = () => [0.5, 0.5]
 
 /**
  * 1 > 2
  * two Bézier curve, equal to direct when a0=0. 
- * demo: M 000 1000 q 20 -300 500 -300 q 480 0 500 300
+ * demo: M 000 1000 q 0 -100 500 -100 q 500 0 500 100
  * at http://www.runoob.com/try/try.php?filename=trysvg_path2
  * 
  * 1 - 2
  * |   |
  * 4 - 3
  */
-CircuitLine.prototype.Line.simpleCurve = (a) => [
+PictureLine.prototype.Line.simpleCurve = (a) => [
     ['M',
         [1, 0, 0, 0]
     ],
     ['Q',
-        [0.98 * (1 - a[0]), 0.02 * (1 - a[0]), 0.02 * a[0], 0.98 * a[0]],
+        [1 * (1 - a[0]), 0 * (1 - a[0]), 0 * a[0], 1 * a[0]],
         [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
     ],
     ['Q',
-        [0.02 * (1 - a[0]), 0.98 * (1 - a[0]), 0.98 * a[0], 0.02 * a[0]],
+        [0 * (1 - a[0]), 1 * (1 - a[0]), 1 * a[0], 0 * a[0]],
         [0, 1, 0, 0]
     ]
 ]
-CircuitLine.prototype.Charge.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
-CircuitLine.prototype.Mark.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
-// ^ unknow now
+PictureLine.prototype.Charge.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+PictureLine.prototype.Mark.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+
 
 
 

@@ -6,8 +6,8 @@ if (typeof require === "function") {
     var CircuitNode = exports.CircuitNode
 }
 
-function massert(a,b){
-    if(String(a)!==String(b)){
+function massert(a, b) {
+    if (String(a) !== String(b)) {
         console.log(`fail: ${a} = ${b}`)
     } else {
         console.log(b)
@@ -15,7 +15,7 @@ function massert(a,b){
 }
 
 let qvt = new QVT().init()
-let ccc = new CircuitNode().init(0,0)
+let ccc = new CircuitNode().init(0, 0)
 
 qvt.setInput(`
 h
@@ -31,9 +31,17 @@ console.log(qvt.getFormatInput())
 
 console.log(qvt.gateArray)
 
-let nodeInfo=qvt.getNodes()
-console.log(nodeInfo)
+qvt.getNodes()
+console.log(qvt.nodeNet)
+console.log(qvt.nodeLink)
 
-massert(nodeInfo[0]['4,3'].innernalMap[1].targetIndex,4)
-massert(nodeInfo[0]['4,3'].innernalMap[2].targetIndex,3)
+massert(qvt.nodeNet[qvt.util.di2s(4,3)].innernalLink[1].targetIndex, 4)
+massert(qvt.nodeNet[qvt.util.di2s(4,3)].innernalLink[2].targetIndex, 3)
 
+qvt.buildNodePosition()
+
+massert(qvt.nodeNet[qvt.util.di2s(2,3)].position[4], [3.75, 3])
+
+qvt.getLines()
+console.log(qvt.circuitLines)
+console.log(qvt.pictureLines)
