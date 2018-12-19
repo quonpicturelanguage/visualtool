@@ -557,6 +557,39 @@ CircuitNode.prototype.single = function (nodestr) {
  */
 CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isControlBit) {
     this.rawArg = [nodestr, nodestr2, bit2Index, isControlBit]
+    let match = this.util.GateMatch.ControlGate(nodestr)
+    this.type = match[0]
+    if (isControlBit) {
+        let linkArray = [[1, 5], [2, 6]]
+        let zIndex = [8, 7]
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+        })
+
+        // 3,4 7,8 -> 1',2' 5',6'
+        linkArray = [[3, 1], [4, 2], [7, 5], [8, 6]]
+        zIndex = [6, 5, 4, 3]
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: [this.deep, bit2Index], targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+        })
+
+    } else {
+        let linkArray = [[3, 7], [4, 8]]
+        let zIndex = [2, 1]
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+        })
+    }
+
+
+    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+    mapArray.forEach((v, i) => {
+        // rebuild 5~8's map
+        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+    })
     return this
 }
 
