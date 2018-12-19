@@ -13,26 +13,26 @@ QuonUtils.prototype.init = function () {
     Object.keys(this.GateSourcePattern).forEach(v => {
         this.GatePattern[v] = this.regexReplace(this.GateList[v], this.GateSourcePattern[v])
     })
-    let util=this
-    let f0=(str,patternName)=>{
-        let a=util.GatePattern[patternName].exec(str)
-        return a?[a[1],a[2]]:null
+    let util = this
+    let f0 = (str, patternName) => {
+        let a = util.GatePattern[patternName].exec(str)
+        return a ? [a[1], a[2]] : null
     }
-    let f1=(str,patternName)=>{
-        let a=util.GatePattern[patternName].exec(str)
-        return a?[a[1],util.parseNUMBER(a[2]),a[3]]:null
+    let f1 = (str, patternName) => {
+        let a = util.GatePattern[patternName].exec(str)
+        return a ? [a[1], util.parseNUMBER(a[2]), a[3]] : null
     }
-    let f2=(str,patternName)=>{
-        let a=util.GatePattern[patternName].exec(str)
-        return a?[a[1],util.parseNUMBER(a[2]),util.parseNUMBER(a[3]),a[4]]:null
+    let f2 = (str, patternName) => {
+        let a = util.GatePattern[patternName].exec(str)
+        return a ? [a[1], util.parseNUMBER(a[2]), util.parseNUMBER(a[3]), a[4]] : null
     }
-    this.GateMatch.Measure=str=>f1(str,'Measure')
-    this.GateMatch.ControlGate=str=>f2(str,'ControlGate')
-    this.GateMatch.MeausreControlGate=str=>f2(str,'MeausreControlGate')
-    this.GateMatch.TwoBitGate=str=>f1(str,'TwoBitGate')
-    this.GateMatch.OneArgSingleBitGate=str=>f1(str,'OneArgSingleBitGate')
-    this.GateMatch.TwoArgSingleBitGate=str=>f2(str,'TwoArgSingleBitGate')
-    this.GateMatch.SingleBitGate=str=>f0(str,'SingleBitGate')
+    this.GateMatch.Measure = str => f1(str, 'Measure')
+    this.GateMatch.ControlGate = str => f2(str, 'ControlGate')
+    this.GateMatch.MeausreControlGate = str => f2(str, 'MeausreControlGate')
+    this.GateMatch.TwoBitGate = str => f1(str, 'TwoBitGate')
+    this.GateMatch.OneArgSingleBitGate = str => f1(str, 'OneArgSingleBitGate')
+    this.GateMatch.TwoArgSingleBitGate = str => f2(str, 'TwoArgSingleBitGate')
+    this.GateMatch.SingleBitGate = str => f0(str, 'SingleBitGate')
 
     return this
 }
@@ -42,12 +42,12 @@ QuonUtils.prototype.init = function () {
  */
 QuonUtils.prototype.GateList = {
     'Measure': ['mz', 'mx', 'my'],
-    'ControlGate': ['cnot', 'cx', 'cy', 'cz'],
+    'ControlGate': ['cz'],
     'MeausreControlGate': ['mcx', 'mcy', 'mcz'],
-    'TwoBitGate': ['cnot', 'cx', 'cy', 'cz', 'mcx', 'mcy', 'mcz'],
+    'TwoBitGate': ['cz', 'mcx', 'mcy', 'mcz'],
     'OneArgSingleBitGate': ['i', 'x', 'y', 'z', 'h', 's', 'sd', 't', 'td'],
-    'TwoArgSingleBitGate': ['rx', 'ry', 'rz'],
-    'SingleBitGate': ['i', 'x', 'y', 'z', 'h', 's', 'sd', 't', 'td', 'rx', 'ry', 'rz'],
+    'TwoArgSingleBitGate': ['rx', 'rz'],
+    'SingleBitGate': ['i', 'x', 'y', 'z', 'h', 's', 'sd', 't', 'td', 'rx', 'rz'],
 }
 
 /**
@@ -60,8 +60,8 @@ QuonUtils.prototype.GateSourcePattern = {
     'MeausreControlGate': /^(TBD)(PINT)(?:_(NUMBER))?(ARG)?$/,
     'TwoBitGate': /^(TBD)(PINT)(?:_NUMBER)?(ARG)?$/,
     'OneArgSingleBitGate': /^(TBD)(NUMBER)?(ARG)?$/,
-    'TwoArgSingleBitGate': /^(TBD)(PINT)(?:_(NUMBER))?(ARG)?$/,
-    'SingleBitGate': /^(TBD)(?:NUMBER|(?:PINT)(?:_NUMBER)?)(ARG)?$/,
+    'TwoArgSingleBitGate': /^(TBD)(NUMBER)(?:_(NUMBER))?(ARG)?$/,
+    'SingleBitGate': /^(TBD)(?:NUMBER|(?:NUMBER)(?:_NUMBER)?)(ARG)?$/,
 }
 
 /**
@@ -72,7 +72,7 @@ QuonUtils.prototype.GatePattern = {}
 /**
  * @type {{String:<String>Array}}
  */
-QuonUtils.prototype.GateMatch={}
+QuonUtils.prototype.GateMatch = {}
 
 /**
  * fill the template regexp with the right content 
@@ -143,6 +143,14 @@ QVT.prototype.init = function () {
     this.stage = ''
     this.stageInfo = {}
     return this
+}
+
+QVT.prototype.clear = function () {
+    if (this.nodeNet) {
+        for (let node in this.nodeNet) {
+            this.nodeNet[node].clear()
+        }
+    }
 }
 
 QVT.prototype.util = QuonUtilsObject
@@ -246,7 +254,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 // if it is a measure operator
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
-                nodeNet[s(dd ,ii)] = new CircuitNode().init(ii, dd, nodeNet).measure(nodestr)
+                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).measure(nodestr)
                 bitStatus[ii] = 'c'
                 continue
             }
@@ -254,7 +262,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 // if it is a Single Bit Gate
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
-                nodeNet[s(dd ,ii)] = new CircuitNode().init(ii, dd, nodeNet).single(nodestr)
+                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).single(nodestr)
                 continue
             }
             if (util.GateMatch.ControlGate(nodestr)) {
@@ -274,8 +282,8 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 let nodestr2 = gateArray[dd][bit2Index]
                 bitDeep[bit2Index]++
                 let isControlBit = match[3] % 2 == 1
-                nodeNet[s(dd ,ii)] = new CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, isControlBit)
-                nodeNet[s(dd,bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, !isControlBit)
+                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
+                nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
                 nodeLink.push({ deep: dd, bits: isControlBit ? [ii, bit2Index] : [bit2Index, ii], type: 'ControlGate' })
                 continue
             }
@@ -299,8 +307,8 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 if (isControlBit && bitStatus[ii] !== 'c' || !isControlBit && bitStatus[bit2Index] !== 'c') this.error('bit has not been measured');
                 // the target bit must be quantum
                 if (isControlBit && bitStatus[bit2Index] !== 'q' || !isControlBit && bitStatus[ii] !== 'q') this.error('bit has been measured');
-                nodeNet[s(dd ,ii)] = new CircuitNode().init(ii, dd, nodeNet).meausreControl(nodestr, nodestr2, isControlBit)
-                nodeNet[s(dd,bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, !isControlBit)
+                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).meausreControl(nodestr, nodestr2, bit2Index, isControlBit)
+                nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, ii, !isControlBit)
                 nodeLink.push({ deep: dd, bits: isControlBit ? [ii, bit2Index] : [bit2Index, ii], type: 'MeausreControlGate' })
                 continue
             }
@@ -339,12 +347,12 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
 
     this.innernalMap = {}
     this.externalMap = {}
-    let temparray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-    temparray.forEach(v => {
-        this.innernalMap[v[0]] = { targetNode: this.SELF, targetIndex: v[1], draw: true }
-        this.innernalMap[v[1]] = { targetNode: this.NO, targetIndex: 0, draw: false }
-        this.externalMap[v[0]] = { targetNode: this.NO, targetIndex: 0, draw: false }
-        this.externalMap[v[1]] = { targetNode: this.NO, targetIndex: 0, draw: false }
+    this.indexMap = {}
+    let linkArray = [1, 2, 3, 4, 5, 6, 7, 8]
+    linkArray.forEach(v => {
+        this.innernalMap[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
+        this.externalMap[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
+        this.indexMap[v] = v
     })
 
     return this
@@ -354,6 +362,7 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
  * delete cycle reference
  */
 CircuitNode.prototype.clear = function () {
+    delete (this.nodeNet)
     delete (this.innernalMap)
     delete (this.externalMap)
     delete (this.SELF)
@@ -369,6 +378,7 @@ CircuitNode.prototype.util = QuonUtilsObject
 
 /**
  * get innernalMap or innernalMap, query from nodeNet instead of return the deep and the bitIndex
+ * draw: [functionname:String,args:Array,zIndex:Number]
  * @param {String} type in ['in','out']
  * @param {Number} arg in 1~8
  */
@@ -378,7 +388,7 @@ CircuitNode.prototype.getMap = function (type, arg) {
     let info = Object.assign({}, thismap[arg])
     if (info.targetNode instanceof Array) {
         if (this.nodeNet == null) this.error('nodeNet equal to null');
-        info.targetNode = this.nodeNet[this.util.di2s(info.targetNode[0],info.targetNode[1])]
+        info.targetNode = this.nodeNet[this.util.di2s(info.targetNode[0], info.targetNode[1])]
     }
 }
 
@@ -388,16 +398,27 @@ CircuitNode.prototype.getMap = function (type, arg) {
  */
 CircuitNode.prototype.measure = function (nodestr) {
     this.rawArg = [nodestr]
-    let match=this.util.GateMatch.Measure(nodestr)
-    this.type=match[0]
-    let temparray = {
-        mz:[[1, 2], [3, 4]],
-        mx:[[1, 4], [2, 3]],
-        my:[[1, 3], [2, 4]],
-    }[match[0]]
-    temparray.forEach(v => {
-        this.innernalMap[v[0]] = { targetNode: this.SELF, targetIndex: v[1], draw: true }
-        this.innernalMap[v[1]] = { targetNode: this.SELF, targetIndex: v[0], draw: false }
+    let match = this.util.GateMatch.Measure(nodestr)
+    this.type = match[0]
+    let a = 0.25
+    let b = 0.2
+    let c = 2
+    let d = 1
+    let linkArray = {
+        mz: [[1, 2, b, c], [3, 4, b, d]],
+        mx: [[1, 4, b, c], [2, 3, b, d]],
+        my: [[1, 3, b, c], [2, 4, a, d]],
+    }[this.type]
+    let args = [0.3, 0.2]
+    let zIndex = [2, 1]
+    linkArray.forEach(v => {
+        this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['simpleCurve', [v[2]], v[3]], line: 1 })
+    })
+    // draw: [functionname:String,args:Array,zIndex:Number]
+    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+    mapArray.forEach((v, i) => {
+        // rebuild 5~8's map
+        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
     })
     return this
 }
@@ -408,7 +429,123 @@ CircuitNode.prototype.measure = function (nodestr) {
  */
 CircuitNode.prototype.single = function (nodestr) {
     this.rawArg = [nodestr]
-    
+    let match = this.util.GateMatch.OneArgSingleBitGate(nodestr)
+    if (!match) match = this.util.GateMatch.TwoArgSingleBitGate(nodestr);
+
+    this.type = match[0]
+
+    if (['i', 'x', 'y', 'z'].indexOf(this.type) !== -1) {
+        let reverseCharge = (v => ~~(v === 0))(match[1])
+        let linkArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+        let zIndex = [4, 3, 2, 1]
+        let chargeArray = {
+            i: [1, 1, 1, 1],
+            x: [0, 1, 1, 0],
+            y: [1, 0, 1, 0],
+            z: [1, 1, 0, 0]
+        }[this.type]
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, charge: chargeArray[i] ^ reverseCharge })
+        })
+        // draw: [functionname:String,args:Array,zIndex:Number]
+        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+        mapArray.forEach((v, i) => {
+            // rebuild 5~8's map
+            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+        })
+    }
+
+    if (['h'].indexOf(this.type) !== -1) {
+        let rotationType = (v => ~~(v !== 0))(match[1])
+        let linkArray = {
+            '0': [[1, 8], [2, 5], [3, 6], [4, 7]],
+            '1': [[1, 6], [2, 7], [3, 8], [4, 5]],
+        }[rotationType]
+        let zIndex = {
+            '0': [4, 3, 2, 1],
+            '1': [3, 2, 1, 4],
+        }[rotationType]
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+        })
+        // draw: [functionname:String,args:Array,zIndex:Number]
+        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+        mapArray.forEach((v, i) => {
+            // rebuild 5~8's map
+            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+        })
+    }
+
+    if (['s', 'sd', 't', 'td'].indexOf(this.type) !== -1) {
+        let rotationType = (v => ~~(v !== 0))(match[1])
+        let markContent = (v => [{ 's': null, 'sd': null, 't': '90', 'td': '-90' }[v]][0])(this.type)
+        let linkArray = {
+            '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
+            '1': [[1, 5], [2, 6], [3, 8], [4, 7]],
+        }[rotationType]
+        let zIndex = {
+            '0': [4, 3, 2, 1],
+            '1': [4, 3, 1, 2],
+        }[rotationType]
+        let mark = {
+            '0': [1, 0, 0, 0],
+            '1': [0, 0, 1, 0],
+        }[rotationType]
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
+        })
+        // draw: [functionname:String,args:Array,zIndex:Number]
+        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+        mapArray.forEach((v, i) => {
+            // rebuild 5~8's map
+            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+        })
+    }
+
+    if (['rx', 'rz'].indexOf(this.type) !== -1) {
+        let rotationType = (v => ~~(v !== 0))(match[2])
+        let markContent = (v => String(v))(match[1])
+        let linkArray = {
+            '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
+            '1': [[1, 5], [2, 6], [3, 8], [4, 7]],
+        }[rotationType]
+        let zIndex = {
+            '0': [4, 3, 2, 1],
+            '1': [4, 3, 1, 2],
+        }[rotationType]
+        let mark = {
+            '0': [1, 0, 0, 0],
+            '1': [0, 0, 1, 0],
+        }[rotationType]
+        if (this.type === 'rx') {
+            linkArray = {
+                '0': [[1, 5], [2, 7], [3, 6], [4, 8]],
+                '1': [[1, 8], [2, 6], [3, 7], [4, 5]],
+            }[rotationType]
+            zIndex = {
+                '0': [4, 3, 2, 1],
+                '1': [4, 2, 1, 3],
+            }[rotationType]
+            mark = {
+                '0': [0, 1, 0, 0],
+                '1': [1, 0, 0, 0],
+            }[rotationType]
+        }
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
+        })
+        // draw: [functionname:String,args:Array,zIndex:Number]
+        let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+        mapArray.forEach((v, i) => {
+            // rebuild 5~8's map
+            this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+        })
+    }
+
     return this
 }
 
@@ -418,8 +555,8 @@ CircuitNode.prototype.single = function (nodestr) {
  * @param {String} nodestr2 
  * @param {Boolean} isControlBit 
  */
-CircuitNode.prototype.control = function (nodestr, nodestr2, isControlBit) {
-    this.rawArg = [nodestr, nodestr2, isControlBit]
+CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isControlBit) {
+    this.rawArg = [nodestr, nodestr2, bit2Index, isControlBit]
     return this
 }
 
@@ -429,16 +566,50 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, isControlBit) {
  * @param {String} nodestr2 
  * @param {Boolean} isControlBit 
  */
-CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, isControlBit) {
-    this.rawArg = [nodestr, nodestr2, isControlBit]
+CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, bit2Index, isControlBit) {
+    this.rawArg = [nodestr, nodestr2, bit2Index, isControlBit]
+    let match = this.util.GateMatch.MeausreControlGate(nodestr)
+    this.type = match[0]
+
+    let markContent = match[4] ? match[4].slice(1, -1) : 'i'
+
+    if (isControlBit) {
+        markContent = markContent + ' -' + markContent
+        // draw mark only
+        this.innernalMap[1] = Object.assign(this.innernalMap[1], { targetNode: [this.SELF], targetIndex: 3, draw: ['direct', [], 1], mark: markContent })
+        // draw: [functionname:String,args:Array,zIndex:Number]
+    } else {
+        let linkArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+        let reverseCharge = (v => ~~(v === 0))(match[2])
+        let zIndex = [4, 3, 2, 1]
+        let markArray = {
+            mcx: [0, 1, 1, 0],
+            mcy: [1, 0, 1, 0],
+            mcz: [1, 1, 0, 0]
+        }[this.type]
+        let minusArray = ['', '', '-', '-']
+        linkArray.forEach((v, i) => {
+            // link lines
+            this.innernalMap[v[0]] = Object.assign(this.innernalMap[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: (markArray[i] ^ reverseCharge) ? minusArray[i] + markContent : null })
+        })
+        // draw: [functionname:String,args:Array,zIndex:Number]
+    }
+
+    let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
+    mapArray.forEach((v, i) => {
+        // rebuild 5~8's map
+        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+    })
     return this
 }
+
+
 
 /**
  * @constructor
  */
 function CircuitLine() {
-    
+
 }
 
 CircuitLine.prototype.init = function (linemode, points) {
@@ -448,7 +619,9 @@ CircuitLine.prototype.init = function (linemode, points) {
     return this
 }
 
-CircuitLine.prototype.Line={}
+CircuitLine.prototype.Line = {}
+CircuitLine.prototype.Charge = {}
+CircuitLine.prototype.Mark = {}
 
 /**
  * 1 > 2
@@ -456,17 +629,43 @@ CircuitLine.prototype.Line={}
  * 
  * 1 - 2
  */
-CircuitLine.prototype.Line.direct=()=>[['M',[1,0]],['L',[0,1]]]
+CircuitLine.prototype.Line.direct = () => [['M', [1, 0]], ['L', [0, 1]]]
+CircuitLine.prototype.Charge.direct = () => [0.5, 0.5]
+CircuitLine.prototype.Mark.direct = () => [0.5, 0.5]
 
 /**
  * 1 > 2
- * Bézier curve, equal to direct when a0=0. 
+ * two Bézier curve, equal to direct when a0=0. 
+ * demo: M 000 1000 q 20 -300 500 -300 q 480 0 500 300
+ * at http://www.runoob.com/try/try.php?filename=trysvg_path2
  * 
  * 1 - 2
  * |   |
  * 4 - 3
  */
-CircuitLine.prototype.Line.simpleCurve=(a0)=>[['M',[1,0,0,0]],['C',[0.5*(1-a),0.5*(1-a),0.5*a,0.5*a],[0,1,0,0]]]
+CircuitLine.prototype.Line.simpleCurve = (a) => [
+    ['M',
+        [1, 0, 0, 0]
+    ],
+    ['Q',
+        [0.98 * (1 - a[0]), 0.02 * (1 - a[0]), 0.02 * a[0], 0.98 * a[0]],
+        [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+    ],
+    ['Q',
+        [0.02 * (1 - a[0]), 0.98 * (1 - a[0]), 0.98 * a[0], 0.02 * a[0]],
+        [0, 1, 0, 0]
+    ]
+]
+CircuitLine.prototype.Charge.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+CircuitLine.prototype.Mark.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+// ^ unknow now
+
+
+
+
+
+
+
 
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT

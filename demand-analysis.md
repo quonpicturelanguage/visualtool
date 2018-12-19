@@ -21,9 +21,9 @@ mcx1_1 mcx2
 circult demo:
 ```
 h  ,   ,    ,    
-cx1,cx2,    ,    
-   ,cx3,cx4 ,    
-   ,   ,cx5 ,cx6 
+cz1,cz2,    ,    
+   ,cz3,cz4 ,    
+   ,   ,cz5 ,cz6 
    ,   ,    ,mx  
    ,   ,mcy2,mcy1
 ```

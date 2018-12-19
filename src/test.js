@@ -19,9 +19,9 @@ let ccc = new CircuitNode().init(0,0)
 
 qvt.setInput(`
 h
-cx1,cx2
-,cx3,cx4
-,,cx5,cx6
+cz1,cz2
+,cz3,cz4
+,,cz5,cz6
 ,,,mx
 ,,mcy2,mcy1
 `)
