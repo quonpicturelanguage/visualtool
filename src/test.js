@@ -1,4 +1,5 @@
-if (typeof require === "function") {
+let isNodejs = typeof require === "function"
+if (isNodejs) {
     var QVT = require('./main.js').QVT
     var CircuitNode = require('./main.js').CircuitNode
     var PictureLine = require('./main.js').PictureLine
@@ -8,7 +9,7 @@ if (typeof require === "function") {
     var PictureLine = exports.PictureLine
 }
 
-let massertResult=[0,0]
+let massertResult = [0, 0]
 function massert(a, b) {
     massertResult[1]++
     if (String(a) !== String(b)) {
@@ -23,11 +24,11 @@ let cn = new CircuitNode().init(2, 0)
 ////////////////////////
 let pl = new PictureLine()
 
-pl.sourcePosition=[[2,1],[0,1],[1,0]]
-massert(pl.combine([0.5,0.2,0.3]),[1.3, 0.7])
+pl.sourcePosition = [[2, 1], [0, 1], [1, 0]]
+massert(pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7])
 
-pl.sourcePosition=[[2,1,1],[0,1,0],[0,0,1]]
-massert(pl.combine([0.5,0.2,0.3]),[1, 0.7, 0.8])
+pl.sourcePosition = [[2, 1, 1], [0, 1, 0], [0, 0, 1]]
+massert(pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8])
 
 ////////////////////////
 
@@ -50,20 +51,25 @@ qvt.getNodes()
 console.log(qvt.nodeNet)
 console.log(qvt.nodeLink)
 
-massert(qvt.nodeNet[qvt.util.di2s(4,3)].innernalLink[1].targetIndex, 4)
-massert(qvt.nodeNet[qvt.util.di2s(4,3)].innernalLink[2].targetIndex, 3)
+massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 4)
+massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 3)
 
 qvt.buildNodePosition()
 
-massert(qvt.nodeNet[qvt.util.di2s(2,3)].position[4], [3.75, 3])
+massert(qvt.nodeNet[qvt.util.di2s(2, 3)].position[4], [3.75, 3])
 
 qvt.getLines()
 console.log(qvt.circuitLines)
 console.log(qvt.pictureLines)
 
 ////
-
-console.log(qvt.getPicture())
+if (isNodejs) {
+    console.log(qvt.getPicture())
+} else {
+    let node=document.createElement('div')
+    node.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${qvt.gateArray[0].length*100} ${[qvt.gateArray.length+2]*100}">\n${qvt.getPicture()}</svg>`
+    document.body.appendChild(node)
+}
 
 /////////////////////////////////////////////////
 console.log(`\n\n\n${massertResult[0]}/${massertResult[1]} pass`)

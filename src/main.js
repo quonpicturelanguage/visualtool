@@ -129,6 +129,14 @@ QuonUtils.prototype.di2s = function (deep, bitIndex) {
     return deep + ',' + bitIndex
 }
 
+/**
+ * find the other point index in the pair
+ * @param {Number} index 1~8
+ */
+QuonUtils.prototype.i = function (index) {
+    return index<=4?index+4:index-4;
+}
+
 let QuonUtilsObject = new QuonUtils().init()
 
 
@@ -286,7 +294,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 if (bit2Index === -1) this.error('no match gate');
                 let nodestr2 = gateArray[dd][bit2Index]
                 bitDeep[bit2Index]++
-                let isControlBit = match[3] % 2 == 1
+                let isControlBit = match[1] % 2 == 1
                 nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
                 nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
                 nodeLink.push({ deep: dd, bits: isControlBit ? [ii, bit2Index] : [bit2Index, ii], type: 'ControlGate' })
@@ -307,7 +315,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 if (bit2Index === -1) this.error('no match gate');
                 let nodestr2 = gateArray[dd][bit2Index]
                 bitDeep[bit2Index]++
-                let isControlBit = match[3] % 2 == 1
+                let isControlBit = match[1] % 2 == 1
                 // the control bit must be classic
                 if (isControlBit && bitStatus[ii] !== 'c' || !isControlBit && bitStatus[bit2Index] !== 'c') this.error('bit has not been measured');
                 // the target bit must be quantum
@@ -401,9 +409,12 @@ QVT.prototype.renderPicture = function (pictureLines, nodeNet) {
                 pictureLayerMap[v[0]] = [v[1]];
         })
     }
-    // todo 组装
+    let SVGContentString = Object.keys(pictureLayerMap).sort().map(layer => {
+        let v = pictureLayerMap[layer].reduce((a, b) => a + b)
+        return `<g class='layer${layer}'>\n${v}</g>\n`
+    }).reduce((a, b) => a + b)
     this.stage = ''
-    return pictureLayerMap
+    return SVGContentString
 }
 
 
@@ -484,6 +495,7 @@ CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionInde
         return [bitIndex + 0.25 + (positionIndex - 1) * 0.5 / 3, deep + 1];
     else
         return this.calculatePosition(deep + 1, bitIndex, positionIndex - 4);
+    // .map((v,i)=>i==1?v+0.01:v);
 }
 
 
@@ -513,21 +525,21 @@ CircuitNode.prototype.measure = function (nodestr) {
     this.rawArg = [nodestr]
     let match = this.util.GateMatch.Measure(nodestr)
     this.type = match[0]
-    let a = 0.12
-    let b = 0.1
+    let a = 0.1
+    let b = 0.2
     let c = 2
     let d = 1
     let s = 's'
     let t = 't'
     let linkArray = {
-        mz: [[1, 2, b, c], [3, 4, b, d]],
-        mx: [[1, 4, b, c], [2, 3, b, d]],
-        my: [[1, 3, b, c], [2, 4, a, d]],
+        mz: [[1, 2, a, c], [3, 4, a, d]],
+        mx: [[1, 4, b, c], [2, 3, a, d]],
+        my: [[1, 3, a, c], [2, 4, a, d]],
     }[this.type]
     let args = [0.3, 0.2]
     let zIndex = [2, 1]
     linkArray.forEach(v => {
-        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['simpleCurve', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]] })
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]] })
     })
     // draw: [functionname:String,args:Array,zIndex:Number]
     return this
@@ -651,18 +663,26 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
     this.type = match[0]
     if (isControlBit) {
         let linkArray = [[1, 5], [2, 6]]
-        let zIndex = [8, 7]
+        let zIndex = [4, 3]
         linkArray.forEach((v, i) => {
             // link lines
             this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
         })
 
-        // 3,4 7,8 -> 1',2' 5',6'
-        linkArray = [[3, 1], [4, 2], [7, 5], [8, 6]]
-        zIndex = [6, 5, 4, 3]
+        let s = 's'
+        let t = 't'
+        let a = 0.15
+        // 3,4 7,8 -> 1',5' 2',6'
+        linkArray = [
+            [3, 1, 'parallelNegative', [a], [[s, 3], [t, 1], [t, 5], [s, 7]]],
+            [4, 5, 'direct', [], null],
+            [7, 2, 'direct', [], null],
+            [8, 6, 'parallelNegative', [a], [[s, 8], [t, 6], [t, 2], [s, 4]]]
+        ]
+        zIndex = [7, 8, 6, 5]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: [this.deep, bit2Index], targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: [this.deep, bit2Index], targetIndex: v[1], draw: [v[2], v[3], zIndex[i]], line: 1, points: v[4] })
         })
 
     } else {
@@ -736,6 +756,10 @@ PictureLine.prototype.init = function (node1, realIndex, link) {
     this.args = link.draw[1]
     this.zIndex = link.draw[2]
 
+    this.line = link.line
+    this.charge = link.charge
+    this.mark = link.mark
+
 
     this.node1 = node1
     this.node2 = node2
@@ -760,37 +784,38 @@ PictureLine.prototype.clear = function () {
 PictureLine.prototype.render = function () {
 
     let output = []
-    output = output.concat(this.renderLine())
-    output = output.concat(this.renderCharge())
-    output = output.concat(this.renderMark())
+    if (this.line) output = output.concat(this.renderLine());
+    if (this.charge) output = output.concat(this.renderCharge());
+    if (this.mark) output = output.concat(this.renderMark());
     return output
 }
 
 PictureLine.prototype.renderLine = function () {
     let lineData = this.Line[this.type](this.args)
-    let SVGLineData = lineData.map(v=>[v[0],v.slice(1).map(v=>this.calculateSVGPosition(this.combine(v)))])
-    let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g,' ')
+    let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
+    let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
+    let SVGString = `<path d="${SVGLineString}" stroke="white" stroke-width="7" fill="none" class="backline"/>\n<path d="${SVGLineString}" stroke="black" stroke-width="4" fill="none" class="frontline"/>\n`
     // todo
-    return [[1, 'renderLine']]
+    return [[this.zIndex, SVGString]]
 }
 
 PictureLine.prototype.renderCharge = function () {
     // todo
-    // return [[1, 'renderCharge']]
+    // return [[this.zIndex, 'renderCharge']]
     return []
 }
 PictureLine.prototype.renderMark = function () {
     // todo
-    // return [[1, 'renderMark']]
+    // return [[this.zIndex, 'renderMark']]
     return []
 }
 
-PictureLine.prototype.combine=function(distribution){
-    return this.sourcePosition[0].map((v,i)=>distribution.map((v,j)=>v*this.sourcePosition[j][i]).reduce((a,b)=>a+b))
+PictureLine.prototype.combine = function (distribution) {
+    return this.sourcePosition[0].map((v, i) => distribution.map((v, j) => v * this.sourcePosition[j][i]).reduce((a, b) => a + b))
 }
 
-PictureLine.prototype.calculateSVGPosition=function(position){
-    return position
+PictureLine.prototype.calculateSVGPosition = function (position) {
+    return position.map(v => 100 * v)
 }
 
 PictureLine.prototype.Line = {}
@@ -809,7 +834,7 @@ PictureLine.prototype.Mark.direct = () => [0.5, 0.5]
 
 /**
  * 1 > 2
- * two Bézier curve, equal to direct when a0=0. 
+ * two Bézier curve, equal to direct when a=[0]. 
  * demo: M 000 1000 q 0 -100 500 -100 q 500 0 500 100
  * at http://www.runoob.com/try/try.php?filename=trysvg_path2
  * 
@@ -817,7 +842,7 @@ PictureLine.prototype.Mark.direct = () => [0.5, 0.5]
  * |   |
  * 4 - 3
  */
-PictureLine.prototype.Line.simpleCurve = (a) => [
+PictureLine.prototype.Line.parallelNegative = (a) => [
     ['M',
         [1, 0, 0, 0]
     ],
@@ -830,8 +855,33 @@ PictureLine.prototype.Line.simpleCurve = (a) => [
         [0, 1, 0, 0]
     ]
 ]
-PictureLine.prototype.Charge.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
-PictureLine.prototype.Mark.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+PictureLine.prototype.Charge.parallelNegative = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+PictureLine.prototype.Mark.parallelNegative = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[0]), 0.5 * a[0], 0.5 * a[0]]
+
+
+/**
+ * 1 > 3
+ * two Bézier curve, equal to direct when a=[0]. 
+ * 
+ * 1 - 2
+ * |   |
+ * 4 - 3
+ */
+PictureLine.prototype.Line.parallelPositive = (a) => [
+    ['M',
+        [1, 0, 0, 0]
+    ],
+    ['Q',
+        [1 * (1 - a[0]), 0 * (1 - a[0]), 0 * a[0], 1 * a[0]],
+        [0.25, 0.25, 0.25, 0.25]
+    ],
+    ['Q',
+        [0 * a[0], 1 * a[0], 1 * (1 - a[0]), 0 * (1 - a[0])],
+        [0, 0, 1, 0]
+    ]
+]
+PictureLine.prototype.Charge.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
+PictureLine.prototype.Mark.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 
 
 
