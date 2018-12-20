@@ -151,6 +151,11 @@ QVT.prototype.clear = function () {
             this.nodeNet[node].clear()
         }
     }
+    if (this.pictureLines) {
+        for (let line in this.pictureLines) {
+            this.pictureLines[line].clear()
+        }
+    }
 }
 
 QVT.prototype.util = QuonUtilsObject
@@ -374,6 +379,32 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
     return [circuitLines, pictureLines]
 }
 
+QVT.prototype.getPicture = function () {
+    let pictureInfo = this.renderPicture(this.pictureLines, this.nodeNet)
+    return pictureInfo
+}
+
+/**
+ * 
+ * @param {PictureLine[]} pictureLines 
+ * @param {{String:CircuitNode}} nodeNet 
+ */
+QVT.prototype.renderPicture = function (pictureLines, nodeNet) {
+    this.stage = 'renderPicture'
+    let pictureLayerMap = {}
+    for (let lineIndex in pictureLines) {
+        let layers = pictureLines[lineIndex].render()
+        layers.forEach(v => {
+            if (pictureLayerMap[v[0]])
+                pictureLayerMap[v[0]].push(v[1]);
+            else
+                pictureLayerMap[v[0]] = [v[1]];
+        })
+    }
+    // todo 组装
+    this.stage = ''
+    return pictureLayerMap
+}
 
 
 
@@ -549,7 +580,7 @@ CircuitNode.prototype.single = function (nodestr) {
 
     if (['s', 'sd', 't', 'td'].indexOf(this.type) !== -1) {
         let rotationType = (v => ~~(v !== 0))(match[1])
-        let markContent = (v => [{ 's': null, 'sd': null, 't': '90', 'td': '-90' }[v]][0])(this.type)
+        let markContent = (v => [{ 's': null, 'sd': null, 't': '45', 'td': '-45' }[v]][0])(this.type)
         let linkArray = {
             '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
             '1': [[1, 5], [2, 6], [3, 8], [4, 7]],
@@ -701,6 +732,14 @@ PictureLine.prototype.init = function (node1, realIndex, link) {
     this.rawArg = [node1, realIndex, link]
     let node2 = link.targetNode
 
+    this.type = link.draw[0]
+    this.args = link.draw[1]
+    this.zIndex = link.draw[2]
+
+
+    this.node1 = node1
+    this.node2 = node2
+
     this.points = link.points
     if (!this.points) this.points = [['s', realIndex], ['t', link.targetIndex]];
 
@@ -720,6 +759,38 @@ PictureLine.prototype.clear = function () {
 
 PictureLine.prototype.render = function () {
 
+    let output = []
+    output = output.concat(this.renderLine())
+    output = output.concat(this.renderCharge())
+    output = output.concat(this.renderMark())
+    return output
+}
+
+PictureLine.prototype.renderLine = function () {
+    let lineData = this.Line[this.type](this.args)
+    let SVGLineData = lineData.map(v=>[v[0],v.slice(1).map(v=>this.calculateSVGPosition(this.combine(v)))])
+    let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g,' ')
+    // todo
+    return [[1, 'renderLine']]
+}
+
+PictureLine.prototype.renderCharge = function () {
+    // todo
+    // return [[1, 'renderCharge']]
+    return []
+}
+PictureLine.prototype.renderMark = function () {
+    // todo
+    // return [[1, 'renderMark']]
+    return []
+}
+
+PictureLine.prototype.combine=function(distribution){
+    return this.sourcePosition[0].map((v,i)=>distribution.map((v,j)=>v*this.sourcePosition[j][i]).reduce((a,b)=>a+b))
+}
+
+PictureLine.prototype.calculateSVGPosition=function(position){
+    return position
 }
 
 PictureLine.prototype.Line = {}
@@ -773,3 +844,4 @@ PictureLine.prototype.Mark.simpleCurve = (a) => [0.5 * (1 - a[0]), 0.5 * (1 - a[
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT
 exports.CircuitNode = CircuitNode
+exports.PictureLine = PictureLine
