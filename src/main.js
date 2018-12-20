@@ -134,7 +134,7 @@ QuonUtils.prototype.di2s = function (deep, bitIndex) {
  * @param {Number} index 1~8
  */
 QuonUtils.prototype.i = function (index) {
-    return index<=4?index+4:index-4;
+    return index <= 4 ? index + 4 : index - 4;
 }
 
 let QuonUtilsObject = new QuonUtils().init()
@@ -583,9 +583,11 @@ CircuitNode.prototype.single = function (nodestr) {
             '0': [4, 3, 2, 1],
             '1': [3, 2, 1, 4],
         }[rotationType]
+        let a = 0.35
+        let s = 's'
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, points: [[s, v[0]], [s, v[1] - 4], [s, v[1]], [s, v[0] + 4]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -672,11 +674,12 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
         let s = 's'
         let t = 't'
         let a = 0.15
+        let b = 0.2
         // 3,4 7,8 -> 1',5' 2',6'
         linkArray = [
             [3, 1, 'parallelNegative', [a], [[s, 3], [t, 1], [t, 5], [s, 7]]],
-            [4, 5, 'direct', [], null],
-            [7, 2, 'direct', [], null],
+            [4, 5, 'parallelPositive', [b], [[s, 4], [t, 1], [t, 5], [s, 8]]],
+            [7, 2, 'parallelPositive', [b], [[s, 7], [t, 5], [t, 2], [s, 3]]],
             [8, 6, 'parallelNegative', [a], [[s, 8], [t, 6], [t, 2], [s, 4]]]
         ]
         zIndex = [7, 8, 6, 5]
