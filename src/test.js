@@ -42,6 +42,18 @@ cz1,cz2
 ,,mcy2,mcy1
 `)
 
+//fshow
+qvt.setInput(`
+,
+cz1_1,cz2,cz5,cz6
+,,cz7,cz8
+cz3,cz4
+h,h1,h,h1
+,cz9,cz10
+s,s1,,mx
+my1,mz,mcy2,mcy1
+`)
+
 console.log(qvt.rawInput)
 console.log(qvt.getFormatInput())
 

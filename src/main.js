@@ -525,19 +525,22 @@ CircuitNode.prototype.measure = function (nodestr) {
     this.rawArg = [nodestr]
     let match = this.util.GateMatch.Measure(nodestr)
     this.type = match[0]
+    let rotationType = (v => ~~(v !== 0))(match[1])
+    let zIndex = {
+        '0': [2, 1],
+        '1': [1, 2]
+    }[rotationType]
     let a = 0.1
     let b = 0.2
-    let c = 2
-    let d = 1
     let s = 's'
     let t = 't'
     let linkArray = {
-        mz: [[1, 2, a, c], [3, 4, a, d]],
-        mx: [[1, 4, b, c], [2, 3, a, d]],
-        my: [[1, 3, a, c], [2, 4, a, d]],
+        mz: [[1, 2, a, zIndex[0]], [3, 4, a, zIndex[1]]],
+        mx: [[1, 4, b, zIndex[0]], [2, 3, a, zIndex[1]]],
+        my: [[1, 3, a, zIndex[0]], [2, 4, a, zIndex[1]]],
     }[this.type]
     let args = [0.3, 0.2]
-    let zIndex = [2, 1]
+
     linkArray.forEach(v => {
         this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]] })
     })
@@ -581,7 +584,7 @@ CircuitNode.prototype.single = function (nodestr) {
         }[rotationType]
         let zIndex = {
             '0': [4, 3, 2, 1],
-            '1': [3, 2, 1, 4],
+            '1': [4, 3, 2, 1],
         }[rotationType]
         let a = 0.35
         let s = 's'
@@ -671,6 +674,8 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
             this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1 })
         })
 
+        let rotationType = (v => ~~(v !== 0))(match[2])
+
         let s = 's'
         let t = 't'
         let a = 0.15
@@ -682,7 +687,18 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
             [7, 2, 'parallelPositive', [b], [[s, 7], [t, 5], [t, 2], [s, 3]]],
             [8, 6, 'parallelNegative', [a], [[s, 8], [t, 6], [t, 2], [s, 4]]]
         ]
-        zIndex = [7, 8, 6, 5]
+        zIndex = [7, 8, 5, 6]
+        if (rotationType) {
+            // 3,4 7,8 -> 6',2' 5',1'
+            linkArray = [
+                [3, 6, 'parallelPositive', [b], [[s, 3], [t, 2], [t, 6], [s, 7]]],
+                [4, 2, 'parallelNegative', [a], [[s, 4], [t, 2], [t, 6], [s, 8]]],
+                [7, 5, 'parallelNegative', [a], [[s, 7], [t, 5], [t, 1], [s, 3]]],
+                [8, 1, 'parallelPositive', [b], [[s, 8], [t, 5], [t, 1], [s, 4]]]
+            ]
+            zIndex = [7, 8, 5, 6]
+        }
+
         linkArray.forEach((v, i) => {
             // link lines
             this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: [this.deep, bit2Index], targetIndex: v[1], draw: [v[2], v[3], zIndex[i]], line: 1, points: v[4] })
@@ -763,6 +779,9 @@ PictureLine.prototype.init = function (node1, realIndex, link) {
     this.charge = link.charge
     this.mark = link.mark
 
+    this.frontlineWidth=4
+    this.backlineWidth=9
+
 
     this.node1 = node1
     this.node2 = node2
@@ -797,8 +816,7 @@ PictureLine.prototype.renderLine = function () {
     let lineData = this.Line[this.type](this.args)
     let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
     let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
-    let SVGString = `<path d="${SVGLineString}" stroke="white" stroke-width="7" fill="none" class="backline"/>\n<path d="${SVGLineString}" stroke="black" stroke-width="4" fill="none" class="frontline"/>\n`
-    // todo
+    let SVGString = `<path d="${SVGLineString}" stroke="white" stroke-width="${this.backlineWidth}" fill="none" class="backline"/>\n<path d="${SVGLineString}" stroke="black" stroke-width="${this.frontlineWidth}" fill="none" class="frontline"/>\n`
     return [[this.zIndex, SVGString]]
 }
 
