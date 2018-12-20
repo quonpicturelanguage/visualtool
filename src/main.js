@@ -577,15 +577,16 @@ CircuitNode.prototype.single = function (nodestr) {
     }
 
     if (['h'].indexOf(this.type) !== -1) {
-        let rotationType = (v => ~~(v !== 0))(match[1])
+        let rotationType = (v => ~~(v % 2 !== 0))(match[1])
+        let coverType = (v => ~~(v > 1))(match[1])
         let linkArray = {
             '0': [[1, 8], [2, 5], [3, 6], [4, 7]],
             '1': [[1, 6], [2, 7], [3, 8], [4, 5]],
         }[rotationType]
         let zIndex = {
             '0': [4, 3, 2, 1],
-            '1': [4, 3, 2, 1],
-        }[rotationType]
+            '1': [1, 2, 3, 4],
+        }[coverType]
         let a = 0.35
         let s = 's'
         linkArray.forEach((v, i) => {
@@ -598,21 +599,24 @@ CircuitNode.prototype.single = function (nodestr) {
     if (['s', 'sd', 't', 'td'].indexOf(this.type) !== -1) {
         let rotationType = (v => ~~(v !== 0))(match[1])
         let markContent = (v => [{ 's': null, 'sd': null, 't': '45', 'td': '-45' }[v]][0])(this.type)
+        let coverType = (v => ~~(v === 'sd'))(this.type)
+        let a = 0.35
+        let s = 's'
         let linkArray = {
             '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
             '1': [[1, 5], [2, 6], [3, 8], [4, 7]],
         }[rotationType]
         let zIndex = {
-            '0': [4, 3, 2, 1],
-            '1': [4, 3, 1, 2],
-        }[rotationType]
+            '0': [4, 3, 1, 2],
+            '1': [3, 4, 2, 1],
+        }[coverType]
         let mark = {
             '0': [1, 0, 0, 0],
             '1': [0, 0, 1, 0],
         }[rotationType]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, v[1] - 4], [s, v[1]], [s, v[0] + 4]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -624,6 +628,8 @@ CircuitNode.prototype.single = function (nodestr) {
             '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
             '1': [[1, 5], [2, 6], [3, 8], [4, 7]],
         }[rotationType]
+        let a = 0.35
+        let s = 's'
         let zIndex = {
             '0': [4, 3, 2, 1],
             '1': [4, 3, 1, 2],
@@ -648,7 +654,7 @@ CircuitNode.prototype.single = function (nodestr) {
         }
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: mark ? markContent : null })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, v[1] - 4], [s, v[1]], [s, v[0] + 4]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -679,7 +685,7 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
         let s = 's'
         let t = 't'
         let a = 0.15
-        let b = 0.2
+        let b = 0.35
         // 3,4 7,8 -> 1',5' 2',6'
         linkArray = [
             [3, 1, 'parallelNegative', [a], [[s, 3], [t, 1], [t, 5], [s, 7]]],
@@ -779,8 +785,8 @@ PictureLine.prototype.init = function (node1, realIndex, link) {
     this.charge = link.charge
     this.mark = link.mark
 
-    this.frontlineWidth=4
-    this.backlineWidth=9
+    this.frontlineWidth = 4
+    this.backlineWidth = 9
 
 
     this.node1 = node1
