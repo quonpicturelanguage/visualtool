@@ -156,12 +156,12 @@ QVT.prototype.init = function () {
 QVT.prototype.clear = function () {
     if (this.nodeNet) {
         for (let node in this.nodeNet) {
-            this.nodeNet[node].clear()
+            this.nodeNet[node] || this.nodeNet[node].clear()
         }
     }
     if (this.pictureLines) {
         for (let line in this.pictureLines) {
-            this.pictureLines[line].clear()
+            this.pictureLines[line] || this.pictureLines[line].clear()
         }
     }
 }
@@ -237,10 +237,10 @@ QVT.prototype.formatGateArray = function (gateArray) {
 }
 
 QVT.prototype.getNodes = function () {
-    let netInfo = this.convertToNodes(this.gateArray)
-    this.nodeNet = netInfo[0]
-    this.nodeLink = netInfo[1]
-    return netInfo
+    let nodeNet = this.convertToNodes(this.gateArray)
+    this.nodeNet = nodeNet
+    this.buildNodePosition(nodeNet)
+    return nodeNet
 }
 
 /**
@@ -254,7 +254,6 @@ QVT.prototype.convertToNodes = function (gateArray) {
     let bitStatus = gateArray[0].map(v => 'q') // q for quantum, c for classic, d for die
     let bitDeep = gateArray[0].map(v => 0) // current processed deep for each bit
     let nodeNet = {}
-    let nodeLink = []
     let s = (deep, bitIndex) => {
         return util.di2s(deep, bitIndex)
     }
@@ -297,7 +296,6 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 let isControlBit = match[1] % 2 == 1
                 nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
                 nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
-                nodeLink.push({ deep: dd, bits: isControlBit ? [ii, bit2Index] : [bit2Index, ii], type: 'ControlGate' })
                 continue
             }
             if (util.GateMatch.MeausreControlGate(nodestr)) {
@@ -322,19 +320,18 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 if (isControlBit && bitStatus[bit2Index] !== 'q' || !isControlBit && bitStatus[ii] !== 'q') this.error('bit has been measured');
                 nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).meausreControl(nodestr, nodestr2, bit2Index, isControlBit)
                 nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, ii, !isControlBit)
-                nodeLink.push({ deep: dd, bits: isControlBit ? [ii, bit2Index] : [bit2Index, ii], type: 'MeausreControlGate' })
                 continue
             }
             this.error('can not match any gate')
         }
     }
     this.stage = ''
-    return [nodeNet, nodeLink]
+    return nodeNet
 }
 
-QVT.prototype.buildNodePosition = function () {
-    for (let node in this.nodeNet) {
-        this.nodeNet[node].buildPosition()
+QVT.prototype.buildNodePosition = function (nodeNet) {
+    for (let node in nodeNet) {
+        nodeNet[node].buildPosition()
     }
 }
 
@@ -357,39 +354,43 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
     let l = (node, realIndex, mapType) => {
         return node.getMap(mapType, realIndex)
     }
-    let for4 = (dd, ii, realIndex, mapType) => {
+    let line = (dd, ii, realIndex, mapType) => {
         let node = n(dd, ii)
         /**
          * @type {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }}
          */
         let link = l(node, realIndex, mapType)
-
+        if (!link.line) return;
+        //todo
+    }
+    let draw = (dd, ii, realIndex, mapType) => {
+        let node = n(dd, ii)
+        let link = l(node, realIndex, mapType)
         if (!link.draw) return;
         let pl = new PictureLine().init(node, realIndex, link)
         pictureLines.push(pl)
-
-        if (!link.line) return;
-        //todo
-
-
     }
-    for (let dd = 0; dd < gateArray.length; dd++) {
-        for (let ii = 0; ii < gateArray[0].length; ii++) {
-            indexArray.forEach(realIndex => {
-                mapTypeArray.forEach(mapType => {
-                    for4(dd, ii, realIndex, mapType)
+    let for4=(fun)=>{
+        for (let dd = 0; dd < gateArray.length; dd++) {
+            for (let ii = 0; ii < gateArray[0].length; ii++) {
+                indexArray.forEach(realIndex => {
+                    mapTypeArray.forEach(mapType => {
+                        fun(dd, ii, realIndex, mapType)
+                    })
                 })
-            })
+            }
         }
     }
-
+    for4(line)
+    for4(draw)
     this.stage = ''
     return [circuitLines, pictureLines]
 }
 
-QVT.prototype.getPicture = function () {
-    let pictureInfo = this.renderPicture(this.pictureLines, this.nodeNet)
-    return pictureInfo
+QVT.prototype.getSVGContentString = function () {
+    let SVGContentString = this.generateSVGContentString(this.pictureLines, this.nodeNet)
+    this.SVGContentString = SVGContentString
+    return SVGContentString
 }
 
 /**
@@ -397,8 +398,8 @@ QVT.prototype.getPicture = function () {
  * @param {PictureLine[]} pictureLines 
  * @param {{String:CircuitNode}} nodeNet 
  */
-QVT.prototype.renderPicture = function (pictureLines, nodeNet) {
-    this.stage = 'renderPicture'
+QVT.prototype.generateSVGContentString = function (pictureLines, nodeNet) {
+    this.stage = 'generateSVGContentString'
     let pictureLayerMap = {}
     for (let lineIndex in pictureLines) {
         let layers = pictureLines[lineIndex].render()
@@ -417,6 +418,17 @@ QVT.prototype.renderPicture = function (pictureLines, nodeNet) {
     return SVGContentString
 }
 
+QVT.prototype.getSVGFrame = function () {
+    let SVGFrame = this.generateSVGFrame(this.SVGContentString, this.gateArray)
+    this.SVGFrame = SVGFrame
+    return SVGFrame
+}
+
+QVT.prototype.generateSVGFrame = function (SVGContentString, gateArray) {
+    let boxSize = new PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
+    let SVGFrame = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${boxSize[0]} ${boxSize[1]}">\n${SVGContentString}</svg>`
+    return SVGFrame
+}
 
 
 /**

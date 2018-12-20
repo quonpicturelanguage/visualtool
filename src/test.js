@@ -1,4 +1,4 @@
-let isNodejs = typeof require === "function"
+let isNodejs = typeof document === "undefined"
 if (isNodejs) {
     var QVT = require('./main.js').QVT
     var CircuitNode = require('./main.js').CircuitNode
@@ -34,25 +34,22 @@ massert(pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8])
 
 let qvt = new QVT().init()
 qvt.setInput(`
-h
-cz1,cz2
-,cz3,cz4
-,,cz5,cz6
-,,,mx
-,,mcy2,mcy1
-`)
-
-//fshow
-qvt.setInput(`
 ,
 cz1_1,cz2,cz5 ,cz6 
 cz3  ,cz4,cz7 ,cz8 
-h3   ,h2  ,s1  ,sd1 
-h    ,h1 ,h   ,h1  
-     ,cz9,cz10,    
-s    ,sd ,    ,mx  
-my1  ,mz ,mcy2,mcy1
+h    ,h1 ,s   ,s1  
+h3   ,h2 ,sd  ,sd1 
+     ,cz9,cz10,my1 
+mz   ,mx ,mcy2,mcy1
 `)
+
+// qvt.setInput(`
+// ,
+// cz1,cz2
+// ,cz3  ,cz4
+// cz5 , ,cz6
+// ,
+// `)
 
 console.log(qvt.rawInput)
 console.log(qvt.getFormatInput())
@@ -61,12 +58,9 @@ console.log(qvt.gateArray)
 
 qvt.getNodes()
 console.log(qvt.nodeNet)
-console.log(qvt.nodeLink)
 
-massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 4)
-massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 3)
-
-qvt.buildNodePosition()
+massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 5)
+massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 6)
 
 massert(qvt.nodeNet[qvt.util.di2s(2, 3)].position[4], [3.75, 3])
 
@@ -74,12 +68,16 @@ qvt.getLines()
 console.log(qvt.circuitLines)
 console.log(qvt.pictureLines)
 
-////
-if (isNodejs) {
-    console.log(qvt.getPicture())
-} else {
+qvt.getSVGContentString()
+qvt.getSVGFrame()
+
+
+if (isNodejs){
+    console.log(qvt.SVGFrame)
+
+}else {
     let node=document.createElement('div')
-    node.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${qvt.gateArray[0].length*100} ${[qvt.gateArray.length+2]*100}">\n${qvt.getPicture()}</svg>`
+    node.innerHTML=qvt.SVGFrame
     document.body.appendChild(node)
 }
 
