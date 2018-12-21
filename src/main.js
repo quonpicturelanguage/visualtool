@@ -26,6 +26,7 @@ QuonUtils.prototype.init = function () {
         let a = util.GatePattern[patternName].exec(str)
         return a ? [a[1], util.parseNUMBER(a[2]), util.parseNUMBER(a[3]), a[4]] : null
     }
+    this.GateMatch.SpeicalMark = str => f0(str, 'SpeicalMark')
     this.GateMatch.Measure = str => f1(str, 'Measure')
     this.GateMatch.ControlGate = str => f2(str, 'ControlGate')
     this.GateMatch.MeausreControlGate = str => f2(str, 'MeausreControlGate')
@@ -41,6 +42,7 @@ QuonUtils.prototype.init = function () {
  * each type contains gates
  */
 QuonUtils.prototype.GateList = {
+    'SpeicalMark': ['e', 'die'],
     'Measure': ['mz', 'mx', 'my'],
     'ControlGate': ['cz'],
     'MeausreControlGate': ['mcx', 'mcy', 'mcz'],
@@ -55,6 +57,7 @@ QuonUtils.prototype.GateList = {
  * PINT(positive integer) and NUMBER will be replaced by their regexp pattern
  */
 QuonUtils.prototype.GateSourcePattern = {
+    'SpeicalMark': /^(TBD)(ARG)?$/,
     'Measure': /^(TBD)(NUMBER)?(ARG)?$/,
     'ControlGate': /^(TBD)(PINT)(?:_(NUMBER))?(ARG)?$/,
     'MeausreControlGate': /^(TBD)(PINT)(?:_(NUMBER))?(ARG)?$/,
@@ -251,7 +254,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
     // let gateArray=this.gateArray;
     let util = this.util
     this.stage = 'convertToNodes'
-    let bitStatus = gateArray[0].map(v => 'q') // q for quantum, c for classic, d for die
+    let bitStatus = gateArray[0].map(v => 'q') // q for quantum, c for classic
     let bitDeep = gateArray[0].map(v => 0) // current processed deep for each bit
     let nodeNet = {}
     let s = (deep, bitIndex) => {
@@ -261,7 +264,14 @@ QVT.prototype.convertToNodes = function (gateArray) {
         for (let ii = 0; ii < gateArray[0].length; ii++) {
             if (dd !== bitDeep[ii]) continue;
             this.stageInfo = { ii: ii, dd: dd, gatestr: gateArray[dd][ii] }
-            let nodestr = gateArray[dd][ii] || 'i1' // '' equal to 'i1'
+            let nodestr = gateArray[dd][ii] || (bitStatus[ii] === 'q' ? 'i1' : 'e') // '' equal to 'i1'
+            if (util.GateMatch.SpeicalMark(nodestr)) {
+                bitDeep[ii]++
+                let match = util.GateMatch.SpeicalMark(nodestr)
+                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet)
+                if (match[0] === 'die') bitStatus[ii] = 'c';
+                continue
+            }
             if (util.GateMatch.Measure(nodestr)) {
                 // if it is a measure operator
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
@@ -354,14 +364,39 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
     let l = (node, realIndex, mapType) => {
         return node.getMap(mapType, realIndex)
     }
+    let mapPoint2Line = {}
+    let mapLine2Points = {}
+    let mapLine2CircuitLine = {}
+    let drawIndex = [0]
+    let circuitLineNumber = [0]
     let line = (dd, ii, realIndex, mapType) => {
         let node = n(dd, ii)
         /**
          * @type {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }}
          */
         let link = l(node, realIndex, mapType)
+        if (!link.draw) return;
+        drawIndex[0]++
         if (!link.line) return;
-        //todo
+        let points = [[dd, ii, realIndex], [link.targetNode.deep, link.targetNode.bitIndex, link.targetIndex]]
+        points = points.map(v => v[2] <= 4 ? v : [v[0] + 1, v[1], v[2] - 4])
+        points.forEach((v, i) => {
+            v.push(v.reduce((a, b) => a + ',' + b));
+            if (!mapPoint2Line[v[3]]) {
+                mapPoint2Line[v[3]] = circuitLineNumber[0]
+                mapLine2Points[drawIndex[0]] = [v]
+                mapLine2CircuitLine[drawIndex[0]] = circuitLineNumber[0]
+                circuitLines[circuitLineNumber[0]] = [drawIndex[0]]
+                if (i === 0) circuitLineNumber[0]++;
+            } else {
+                //todo
+                if (i === 0) {
+
+                } else {
+
+                }
+            }
+        })
     }
     let draw = (dd, ii, realIndex, mapType) => {
         let node = n(dd, ii)
@@ -370,7 +405,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         let pl = new PictureLine().init(node, realIndex, link)
         pictureLines.push(pl)
     }
-    let for4=(fun)=>{
+    let for4 = (fun) => {
         for (let dd = 0; dd < gateArray.length; dd++) {
             for (let ii = 0; ii < gateArray[0].length; ii++) {
                 indexArray.forEach(realIndex => {
@@ -382,6 +417,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         }
     }
     for4(line)
+    console.log(mapPoint2Line)
     for4(draw)
     this.stage = ''
     return [circuitLines, pictureLines]
@@ -425,9 +461,13 @@ QVT.prototype.getSVGFrame = function () {
 }
 
 QVT.prototype.generateSVGFrame = function (SVGContentString, gateArray) {
-    let boxSize = new PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
-    let SVGFrame = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${boxSize[0]} ${boxSize[1]}">\n${SVGContentString}</svg>`
+    let SVGFrame = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${this.getSVGViewBox(gateArray)}">\n${SVGContentString}</svg>`
     return SVGFrame
+}
+
+QVT.prototype.getSVGViewBox = function (gateArray) {
+    let boxSize = new PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
+    return `0 0 ${boxSize[0]} ${boxSize[1]}`
 }
 
 

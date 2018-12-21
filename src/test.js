@@ -10,7 +10,9 @@ if (isNodejs) {
 }
 
 let massertResult = [0, 0]
-function massert(a, b) {
+function massert(fun) {
+    let a,b
+    [a,b]=fun()
     massertResult[1]++
     if (String(a) !== String(b)) {
         console.log(`fail: ${a} != ${b}`)
@@ -25,10 +27,10 @@ let cn = new CircuitNode().init(2, 0)
 let pl = new PictureLine()
 
 pl.sourcePosition = [[2, 1], [0, 1], [1, 0]]
-massert(pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7])
+massert(()=>[pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7]])
 
 pl.sourcePosition = [[2, 1, 1], [0, 1, 0], [0, 0, 1]]
-massert(pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8])
+massert(()=>[pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 
 ////////////////////////
 
@@ -59,10 +61,10 @@ console.log(qvt.gateArray)
 qvt.getNodes()
 console.log(qvt.nodeNet)
 
-massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 5)
-massert(qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 6)
+massert(()=>[qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 5])
+massert(()=>[qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 6])
 
-massert(qvt.nodeNet[qvt.util.di2s(2, 3)].position[4], [3.75, 3])
+massert(()=>[qvt.nodeNet[qvt.util.di2s(2, 3)].position[4], [3.75, 3]])
 
 qvt.getLines()
 console.log(qvt.circuitLines)
