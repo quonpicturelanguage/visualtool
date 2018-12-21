@@ -11,8 +11,8 @@ if (isNodejs) {
 
 let massertResult = [0, 0]
 function massert(fun) {
-    let a,b
-    [a,b]=fun()
+    let a, b
+    [a, b] = fun()
     massertResult[1]++
     if (String(a) !== String(b)) {
         console.log(`fail: ${a} != ${b}`)
@@ -27,18 +27,18 @@ let cn = new CircuitNode().init(2, 0)
 let pl = new PictureLine()
 
 pl.sourcePosition = [[2, 1], [0, 1], [1, 0]]
-massert(()=>[pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7]])
+massert(() => [pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7]])
 
 pl.sourcePosition = [[2, 1, 1], [0, 1, 0], [0, 0, 1]]
-massert(()=>[pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
+massert(() => [pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 
 ////////////////////////
 
 let qvt = new QVT().init()
-qvt.getSVGCSS=function(){
+qvt.getSVGCSS = function () {
     return Object.getPrototypeOf(qvt).getSVGCSS() + `
     .frontline.circultline3{
-        stroke:red;stroke-width:${(qvt.frontlineWidth+qvt.backlineWidth)/2};
+        stroke:red;stroke-width:${(qvt.frontlineWidth + qvt.backlineWidth) / 2};
     }
     .frontline.circultline16{
         stroke:#bd0086;
@@ -73,10 +73,10 @@ console.log(qvt.gateArray)
 qvt.getNodes()
 console.log(qvt.nodeNet)
 
-massert(()=>[qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 5])
-massert(()=>[qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 6])
+massert(() => [qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[1].targetIndex, 5])
+massert(() => [qvt.nodeNet[qvt.util.di2s(4, 3)].innernalLink[2].targetIndex, 6])
 
-massert(()=>[qvt.nodeNet[qvt.util.di2s(2, 3)].position[4], [3.75, 3]])
+massert(() => [qvt.nodeNet[qvt.util.di2s(2, 3)].position[4], [3.75, 3]])
 
 qvt.getLines()
 console.log(qvt.circuitLines)
@@ -86,26 +86,13 @@ qvt.getSVGContentString()
 qvt.getSVGFrame()
 
 
-if (isNodejs){
+if (isNodejs) {
     console.log(qvt.SVGFrame)
-
-}else {
-    let node=document.createElement('div')
-    node.innerHTML=qvt.SVGFrame
+} else {
+    let node = document.createElement('div')
+    node.innerHTML = qvt.SVGFrame
     document.body.appendChild(node)
-    let cssnode=document.createElement('style')
-    document.head.appendChild(cssnode)
-    document.querySelectorAll('.frontline').forEach(v=>{
-        v.onmouseover=function(){
-            let classname=/(circultline\d+)/.exec(v.getAttribute('class'))[1]
-            cssnode.innerHTML=`
-            .frontline.${classname}{
-                stroke:blue !important;
-                stroke-width:${(qvt.frontlineWidth+qvt.backlineWidth)/2} !important; 
-            }`
-        }
-        v.onmouseout=function(){cssnode.innerHTML=''}
-    })
+    qvt.listen()
 }
 
 /////////////////////////////////////////////////

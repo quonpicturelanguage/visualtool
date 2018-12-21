@@ -378,7 +378,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         points = points.map(v => v[2] <= 4 ? v : [v[0] + 1, v[1], v[2] - 4])
         // start point of a new line element
         let v = points[0]
-        let cn=null
+        let cn = null
         v.push(v.reduce((a, b) => a + ',' + b));
         // if it is the first time to join the map
         if (!mapPoint2Line[v[3]]) {
@@ -390,7 +390,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
             mapLine2Points[cn] = [v[3]]
             // recored the line with its element
             circuitLines[cn] = [drawIndex[0]]
-        // if it has been added into the map
+            // if it has been added into the map
         } else {
             // get the circuit line where it is in
             cn = mapPoint2Line[v[3]]
@@ -409,12 +409,12 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
             mapPoint2Line[v[3]] = cn
             // push the point into the the circuit line
             mapLine2Points[cn].push(v[3])
-        // if it has been added into the map
+            // if it has been added into the map
         } else {
             let cn2 = mapPoint2Line[v[3]]
             // use cn from the start point
             if (cn !== cn2) {
-                if(cn>cn2)[cn,cn2]=[cn2,cn];
+                if (cn > cn2)[cn, cn2] = [cn2, cn];
                 // merge circult lines
                 mapLine2Points[cn2].forEach(v => { mapPoint2Line[v] = cn })
                 mapLine2Points[cn] = mapLine2Points[cn].concat(mapLine2Points[cn2].reverse())
@@ -515,13 +515,31 @@ QVT.prototype.getSVGViewBox = function (gateArray) {
 QVT.prototype.frontlineWidth = 4
 QVT.prototype.backlineWidth = 9
 
-QVT.prototype.getSVGCSS = function(){
+QVT.prototype.getSVGCSS = function () {
     return `
     .frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
     .backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
 
-    /* .frontline:hover{stroke:blue;stroke-width:${0.7*this.frontlineWidth+0.3*this.backlineWidth};} */
+    /* .frontline:hover{stroke:blue;stroke-width:${0.7 * this.frontlineWidth + 0.3 * this.backlineWidth};} */
     `
+}
+
+QVT.prototype.listen = function () {
+    let isNodejs = typeof document === "undefined"
+    if (isNodejs) return;
+    let cssnode = document.createElement('style')
+    document.head.appendChild(cssnode)
+    document.querySelectorAll('.frontline').forEach(v => {
+        v.onmouseover = () => {
+            let classname = /(circultline\d+)/.exec(v.getAttribute('class'))[1]
+            cssnode.innerHTML = `
+            .frontline.${classname}{
+                stroke:blue !important;
+                stroke-width:${(this.frontlineWidth + this.backlineWidth) / 2} !important; 
+            }`
+        }
+        v.onmouseout = () => { cssnode.innerHTML = '' }
+    })
 }
 
 
@@ -881,12 +899,12 @@ function PictureLine() {
  * @param {Number} lineId
  * @param {Number} circuitLineId
  */
-PictureLine.prototype.init = function (node1, realIndex, link,lineId, circuitLineId) {
+PictureLine.prototype.init = function (node1, realIndex, link, lineId, circuitLineId) {
     this.rawArg = [node1, realIndex, link]
     let node2 = link.targetNode
 
-    this.lineId=lineId
-    this.circuitLineId=circuitLineId
+    this.lineId = lineId
+    this.circuitLineId = circuitLineId
 
     this.type = link.draw[0]
     this.args = link.draw[1]
