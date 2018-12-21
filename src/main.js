@@ -366,8 +366,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
     }
     let mapPoint2Line = {}
     let mapLine2Points = {}
-    let mapLine2CircuitLine = {}
-    let drawIndex = [0]
+    let drawIndex = [-1]
     let circuitLineNumber = [0]
     let line = (dd, ii, realIndex, mapType) => {
         let node = n(dd, ii)
@@ -380,29 +379,51 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         if (!link.line) return;
         let points = [[dd, ii, realIndex], [link.targetNode.deep, link.targetNode.bitIndex, link.targetIndex]]
         points = points.map(v => v[2] <= 4 ? v : [v[0] + 1, v[1], v[2] - 4])
-        points.forEach((v, i) => {
-            v.push(v.reduce((a, b) => a + ',' + b));
-            if (!mapPoint2Line[v[3]]) {
-                mapPoint2Line[v[3]] = circuitLineNumber[0]
-                mapLine2Points[drawIndex[0]] = [v]
-                mapLine2CircuitLine[drawIndex[0]] = circuitLineNumber[0]
-                circuitLines[circuitLineNumber[0]] = [drawIndex[0]]
-                if (i === 0) circuitLineNumber[0]++;
-            } else {
-                //todo
-                if (i === 0) {
-
-                } else {
-
-                }
+        // 
+        let v = points[0]
+        v.push(v.reduce((a, b) => a + ',' + b));
+        if (!mapPoint2Line[v[3]]) {
+            let cn = ++circuitLineNumber[0];
+            mapPoint2Line[v[3]] = cn
+            mapLine2Points[cn] = [v[3]]
+            circuitLines[cn] = [drawIndex[0]]
+        } else {
+            let cn = mapPoint2Line[v[3]]
+            mapLine2Points[cn].push(v[3])
+            circuitLines[cn].push(drawIndex[0])
+        }
+        //
+        v = points[1]
+        v.push(v.reduce((a, b) => a + ',' + b));
+        if (!mapPoint2Line[v[3]]) {
+            let cn = circuitLineNumber[0];
+            mapPoint2Line[v[3]] = cn
+            mapLine2Points[cn].push(v[3])
+        } else {
+            let cn2 = mapPoint2Line[v[3]]
+            let cn = circuitLineNumber[0];
+            if (cn !== cn2) {
+                mapLine2Points[cn2].forEach(v => { mapPoint2Line[v] = cn })
+                mapLine2Points[cn] = mapLine2Points[cn].concat(mapLine2Points[cn2].reverse())
+                mapLine2Points[cn2] = null
+                circuitLines[cn] = circuitLines[cn].concat(circuitLines[cn2].reverse())
+                circuitLines[cn2] = null
             }
-        })
+        }
+
     }
     let draw = (dd, ii, realIndex, mapType) => {
         let node = n(dd, ii)
         let link = l(node, realIndex, mapType)
         if (!link.draw) return;
-        let pl = new PictureLine().init(node, realIndex, link)
+        let circuitLineId = [-1]
+        let lineId = pictureLines.length
+        Object.keys(circuitLines).forEach(v => {
+            if (circuitLineId[0] >= 0 || !circuitLines[v] || circuitLines[v].indexOf(lineId) === -1) return;
+            circuitLineId[0] = v
+        })
+        // todo this.error if -1
+        let pl = new PictureLine().init(node, realIndex, link, lineId, circuitLineId[0])
         pictureLines.push(pl)
     }
     let for4 = (fun) => {
@@ -417,7 +438,6 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         }
     }
     for4(line)
-    console.log(mapPoint2Line)
     for4(draw)
     this.stage = ''
     return [circuitLines, pictureLines]
@@ -824,10 +844,15 @@ function PictureLine() {
  * @param {CircuitNode} node1
  * @param {Number} realIndex
  * @param {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }} link 
+ * @param {Number} lineId
+ * @param {Number} circuitLineId
  */
-PictureLine.prototype.init = function (node1, realIndex, link) {
+PictureLine.prototype.init = function (node1, realIndex, link,lineId, circuitLineId) {
     this.rawArg = [node1, realIndex, link]
     let node2 = link.targetNode
+
+    this.lineId=lineId
+    this.circuitLineId=circuitLineId
 
     this.type = link.draw[0]
     this.args = link.draw[1]
@@ -874,7 +899,7 @@ PictureLine.prototype.renderLine = function () {
     let lineData = this.Line[this.type](this.args)
     let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
     let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
-    let SVGString = `<path d="${SVGLineString}" stroke="white" stroke-width="${this.backlineWidth}" fill="none" class="backline"/>\n<path d="${SVGLineString}" stroke="black" stroke-width="${this.frontlineWidth}" fill="none" class="frontline"/>\n`
+    let SVGString = `<path d="${SVGLineString}" stroke="white" stroke-width="${this.backlineWidth}" fill="none" class="backline line${this.lineId} circultline${this.circuitLineId}"/>\n<path d="${SVGLineString}" stroke="black" stroke-width="${this.frontlineWidth}" fill="none" class="frontline line${this.lineId} circultline${this.circuitLineId}"/>\n`
     return [[this.zIndex, SVGString]]
 }
 
