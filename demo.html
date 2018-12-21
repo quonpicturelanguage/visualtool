@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Demo</title>
+</head>
+
+<body>
+    <div id='main'>
+        <br>
+        <textarea name="circult" id="circult" cols="30" rows="10" spellcheck="false">,
+cz1_1,cz2,cz5 ,cz6 
+cz3  ,cz4,cz7 ,cz8 
+h    ,h1 ,s   ,s1  
+h3   ,h2 ,sd  ,sd1 
+     ,cz9,cz10,my 
+mz   ,mx ,mcy2,mcy1</textarea>
+        <br>
+        <input type="button" id='Generate' value="Generate">
+    </div>
+    <script src="./src/main.js"></script>
+    <script>
+        document.getElementById('Generate').onclick = function () {
+            var QVT = exports.QVT
+            let qvt = new QVT().init()
+            qvt.setInput(document.getElementById('circult').value)
+            qvt.getNodes()
+            qvt.getLines()
+            qvt.getSVGContentString()
+            qvt.getSVGFrame()
+            document.getElementById('main').innerHTML = qvt.SVGFrame
+        }
+    </script>
+</body>
+
+</html>
