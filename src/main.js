@@ -370,39 +370,52 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
     let circuitLineNumber = [0]
     let line = (dd, ii, realIndex, mapType) => {
         let node = n(dd, ii)
-        /**
-         * @type {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }}
-         */
         let link = l(node, realIndex, mapType)
         if (!link.draw) return;
         drawIndex[0]++
         if (!link.line) return;
         let points = [[dd, ii, realIndex], [link.targetNode.deep, link.targetNode.bitIndex, link.targetIndex]]
         points = points.map(v => v[2] <= 4 ? v : [v[0] + 1, v[1], v[2] - 4])
-        // 
+        // start point of a new line element
         let v = points[0]
+        let cn=null
         v.push(v.reduce((a, b) => a + ',' + b));
+        // if it is the first time to join the map
         if (!mapPoint2Line[v[3]]) {
-            let cn = ++circuitLineNumber[0];
+            // creat a new circuit line
+            cn = ++circuitLineNumber[0];
+            // record the point with the new circuit line
             mapPoint2Line[v[3]] = cn
+            // record the line with the point
             mapLine2Points[cn] = [v[3]]
+            // recored the line with its element
             circuitLines[cn] = [drawIndex[0]]
+        // if it has been added into the map
         } else {
-            let cn = mapPoint2Line[v[3]]
+            // get the circuit line where it is in
+            cn = mapPoint2Line[v[3]]
+            // push the point into the the circuit line
             mapLine2Points[cn].push(v[3])
+            // recored the line with its new element
             circuitLines[cn].push(drawIndex[0])
         }
-        //
+        // end point of a new element
         v = points[1]
         v.push(v.reduce((a, b) => a + ',' + b));
+        // if it is the first time to join the map
         if (!mapPoint2Line[v[3]]) {
-            let cn = circuitLineNumber[0];
+            // use cn from the start point
+            // record the point with the new circuit line
             mapPoint2Line[v[3]] = cn
+            // push the point into the the circuit line
             mapLine2Points[cn].push(v[3])
+        // if it has been added into the map
         } else {
             let cn2 = mapPoint2Line[v[3]]
-            let cn = circuitLineNumber[0];
+            // use cn from the start point
             if (cn !== cn2) {
+                if(cn>cn2)[cn,cn2]=[cn2,cn];
+                // merge circult lines
                 mapLine2Points[cn2].forEach(v => { mapPoint2Line[v] = cn })
                 mapLine2Points[cn] = mapLine2Points[cn].concat(mapLine2Points[cn2].reverse())
                 mapLine2Points[cn2] = null
@@ -506,6 +519,8 @@ QVT.prototype.getSVGCSS = function(){
     return `
     path.frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
     path.backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
+
+    path.frontline:hover{stroke:blue;stroke-width:${0.7*this.frontlineWidth+0.3*this.backlineWidth};}
     `
 }
 
@@ -915,7 +930,7 @@ PictureLine.prototype.renderLine = function () {
     let lineData = this.Line[this.type](this.args)
     let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
     let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
-    let SVGString = `<path d="${SVGLineString}" class="backline line${this.lineId} circultline${this.circuitLineId}"/>\n<path d="${SVGLineString}" class="frontline line${this.lineId} circultline${this.circuitLineId}"/>\n`
+    let SVGString = `<path d="${SVGLineString}" class="backline circultline${this.circuitLineId} line${this.lineId}"/>\n<path d="${SVGLineString}" class="frontline circultline${this.circuitLineId} line${this.lineId}"/>\n`
     return [[this.zIndex, SVGString]]
 }
 

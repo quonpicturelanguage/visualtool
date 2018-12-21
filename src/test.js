@@ -35,6 +35,18 @@ massert(()=>[pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 ////////////////////////
 
 let qvt = new QVT().init()
+qvt.getSVGCSS=function(){
+    return Object.getPrototypeOf(qvt).getSVGCSS() + `
+    path.frontline.circultline3{
+        stroke:red;stroke-width:${(this.frontlineWidth+this.backlineWidth)/2};
+    }
+    path.frontline.circultline16{
+        stroke:#bd0086;stroke-width:${(this.frontlineWidth+this.backlineWidth)/2};
+    }
+    `
+}
+
+
 qvt.setInput(`
 ,
 cz1_1,cz2,cz5 ,cz6 
