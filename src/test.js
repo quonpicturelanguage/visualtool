@@ -48,6 +48,9 @@ qvt.getSVGCSS = function () {
     .frontline.circultline1{
         stroke:#bd0086;
     }
+    .frontline.circultline4{
+        stroke:#8d00cb;
+    }
     `
 }
 
