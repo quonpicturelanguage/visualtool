@@ -28,6 +28,7 @@ QuonUtils.prototype.init = function () {
     }
     this.GateMatch.SpeicalMark = str => f0(str, 'SpeicalMark')
     this.GateMatch.Measure = str => f1(str, 'Measure')
+    this.GateMatch.InitialState = str => f1(str, 'InitialState')
     this.GateMatch.ControlGate = str => f2(str, 'ControlGate')
     this.GateMatch.MeausreControlGate = str => f2(str, 'MeausreControlGate')
     this.GateMatch.TwoBitGate = str => f1(str, 'TwoBitGate')
@@ -43,6 +44,7 @@ QuonUtils.prototype.init = function () {
  */
 QuonUtils.prototype.GateList = {
     'SpeicalMark': ['e', 'die'],
+    'InitialState': ['sz','sx','sy'],
     'Measure': ['mz', 'mx', 'my'],
     'ControlGate': ['cz'],
     'MeausreControlGate': ['mcx', 'mcy', 'mcz'],
@@ -58,6 +60,7 @@ QuonUtils.prototype.GateList = {
  */
 QuonUtils.prototype.GateSourcePattern = {
     'SpeicalMark': /^(TBD)(ARG)?$/,
+    'InitialState': /^(TBD)(NUMBER)?(ARG)?$/,
     'Measure': /^(TBD)(NUMBER)?(ARG)?$/,
     'ControlGate': /^(TBD)(PINT)(?:_(NUMBER))?(ARG)?$/,
     'MeausreControlGate': /^(TBD)(PINT)(?:_(NUMBER))?(ARG)?$/,
@@ -270,6 +273,13 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 let match = util.GateMatch.SpeicalMark(nodestr)
                 nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet)
                 if (match[0] === 'die') bitStatus[ii] = 'c';
+                continue
+            }
+            if (util.GateMatch.InitialState(nodestr)) {
+                // if it is a initial state
+                bitDeep[ii]++
+                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).initial(nodestr)
+                bitStatus[ii] = 'q'
                 continue
             }
             if (util.GateMatch.Measure(nodestr)) {
@@ -639,6 +649,37 @@ CircuitNode.prototype.getMap = function (type, realIndex) {
         info.targetNode = this.nodeNet[this.util.di2s(info.targetNode[0], info.targetNode[1])]
     }
     return info
+}
+
+/**
+ * 
+ * @param {String} nodestr 
+ */
+CircuitNode.prototype.initial = function (nodestr) {
+    this.rawArg = [nodestr]
+    let match = this.util.GateMatch.InitialState(nodestr)
+    this.type = match[0]
+    let rotationType = (v => ~~(v !== 0))(match[1])
+    let zIndex = {
+        '0': [2, 1],
+        '1': [1, 2]
+    }[rotationType]
+    let a = 0.1
+    let b = 0.2
+    let s = 's'
+    let t = 't'
+    let linkArray = {
+        sz: [[5, 6, a, zIndex[0]], [7, 8, a, zIndex[1]]],
+        sx: [[5, 8, b, zIndex[0]], [6, 7, a, zIndex[1]]],
+        sy: [[5, 7, a, zIndex[0]], [6, 8, a, zIndex[1]]],
+    }[this.type]
+    let args = [0.3, 0.2]
+
+    linkArray.forEach(v => {
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] - 4], [s, v[0] - 4]] })
+    })
+    // draw: [functionname:String,args:Array,zIndex:Number]
+    return this
 }
 
 /**

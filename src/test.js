@@ -37,10 +37,10 @@ massert(() => [pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 let qvt = new QVT().init()
 qvt.getSVGCSS = function () {
     return Object.getPrototypeOf(qvt).getSVGCSS() + `
-    .frontline.circultline3{
+    .frontline.circultline9{
         stroke:red;stroke-width:${(qvt.frontlineWidth + qvt.backlineWidth) / 2};
     }
-    .frontline.circultline16{
+    .frontline.circultline1{
         stroke:#bd0086;
     }
     `
@@ -48,6 +48,7 @@ qvt.getSVGCSS = function () {
 
 
 qvt.setInput(`
+sx,sz,sy,i
 ,
 cz1_1,cz2,cz5 ,cz6 
 cz3  ,cz4,cz7 ,cz8 
