@@ -762,7 +762,7 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
         linkArray = [
             [3, 1, 'parallelNegative', [a], [[s, 3], [t, 1], [t, 5], [s, 7]]],
             [4, 5, 'parallelPositive', [b], [[s, 4], [t, 1], [t, 5], [s, 8]]],
-            [7, 2, 'parallelPositive', [b], [[s, 7], [t, 5], [t, 2], [s, 3]]],
+            [7, 2, 'parallelPositive', [b], [[s, 7], [t, 6], [t, 2], [s, 3]]],
             [8, 6, 'parallelNegative', [a], [[s, 8], [t, 6], [t, 2], [s, 4]]]
         ]
         zIndex = [6, 7, 8, 5]
