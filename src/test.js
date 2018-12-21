@@ -12,14 +12,19 @@ if (isNodejs) {
 let massertResult = [0, 0]
 function massert(fun) {
     let a, b
-    [a, b] = fun()
     massertResult[1]++
-    if (String(a) !== String(b)) {
-        console.log(`fail: ${a} != ${b}`)
-    } else {
-        massertResult[0]++
-        console.log(b)
+    try {
+        [a, b] = fun()
+        if (String(a) !== String(b)) {
+            console.log(`fail: ${a} != ${b}`)
+        } else {
+            massertResult[0]++
+            console.log(b)
+        }
+    } catch (error) {
+        console.log(`fail: error happen`)
     }
+    
 }
 /////////////////////////////////////////////////
 let cn = new CircuitNode().init(2, 0)
@@ -59,11 +64,9 @@ mz   ,mx ,mcy2,mcy1
 `)
 
 // qvt.setInput(`
-// ,
+// sx,sx
 // cz1,cz2
-// ,cz3  ,cz4
-// cz5 , ,cz6
-// ,
+// h,
 // `)
 
 console.log(qvt.rawInput)
