@@ -37,11 +37,11 @@ massert(()=>[pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 let qvt = new QVT().init()
 qvt.getSVGCSS=function(){
     return Object.getPrototypeOf(qvt).getSVGCSS() + `
-    path.frontline.circultline3{
-        stroke:red;stroke-width:${(this.frontlineWidth+this.backlineWidth)/2};
+    .frontline.circultline3{
+        stroke:red;stroke-width:${(qvt.frontlineWidth+qvt.backlineWidth)/2};
     }
-    path.frontline.circultline16{
-        stroke:#bd0086;stroke-width:${(this.frontlineWidth+this.backlineWidth)/2};
+    .frontline.circultline16{
+        stroke:#bd0086;
     }
     `
 }
@@ -93,6 +93,19 @@ if (isNodejs){
     let node=document.createElement('div')
     node.innerHTML=qvt.SVGFrame
     document.body.appendChild(node)
+    let cssnode=document.createElement('style')
+    document.head.appendChild(cssnode)
+    document.querySelectorAll('.frontline').forEach(v=>{
+        v.onmouseover=function(){
+            let classname=/(circultline\d+)/.exec(v.getAttribute('class'))[1]
+            cssnode.innerHTML=`
+            .frontline.${classname}{
+                stroke:blue !important;
+                stroke-width:${(qvt.frontlineWidth+qvt.backlineWidth)/2} !important; 
+            }`
+        }
+        v.onmouseout=function(){cssnode.innerHTML=''}
+    })
 }
 
 /////////////////////////////////////////////////

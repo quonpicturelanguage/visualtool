@@ -517,10 +517,10 @@ QVT.prototype.backlineWidth = 9
 
 QVT.prototype.getSVGCSS = function(){
     return `
-    path.frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
-    path.backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
+    .frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
+    .backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
 
-    path.frontline:hover{stroke:blue;stroke-width:${0.7*this.frontlineWidth+0.3*this.backlineWidth};}
+    /* .frontline:hover{stroke:blue;stroke-width:${0.7*this.frontlineWidth+0.3*this.backlineWidth};} */
     `
 }
 
