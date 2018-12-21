@@ -41,7 +41,7 @@ cz1_1,cz2,cz5 ,cz6
 cz3  ,cz4,cz7 ,cz8 
 h    ,h1 ,s   ,s1  
 h3   ,h2 ,sd  ,sd1 
-     ,cz9,cz10,my1 
+     ,cz9,cz10,my 
 mz   ,mx ,mcy2,mcy1
 `)
 

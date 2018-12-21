@@ -765,7 +765,7 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
             [7, 2, 'parallelPositive', [b], [[s, 7], [t, 5], [t, 2], [s, 3]]],
             [8, 6, 'parallelNegative', [a], [[s, 8], [t, 6], [t, 2], [s, 4]]]
         ]
-        zIndex = [7, 8, 5, 6]
+        zIndex = [6, 7, 8, 5]
         if (rotationType) {
             // 3,4 7,8 -> 6',2' 5',1'
             linkArray = [
@@ -774,7 +774,7 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
                 [7, 5, 'parallelNegative', [a], [[s, 7], [t, 5], [t, 1], [s, 3]]],
                 [8, 1, 'parallelPositive', [b], [[s, 8], [t, 5], [t, 1], [s, 4]]]
             ]
-            zIndex = [7, 8, 5, 6]
+            zIndex = [8, 6, 5, 7]
         }
 
         linkArray.forEach((v, i) => {
