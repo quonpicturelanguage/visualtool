@@ -481,13 +481,32 @@ QVT.prototype.getSVGFrame = function () {
 }
 
 QVT.prototype.generateSVGFrame = function (SVGContentString, gateArray) {
-    let SVGFrame = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${this.getSVGViewBox(gateArray)}">\n${SVGContentString}</svg>`
+    let SVGFrame = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="${this.getSVGViewBox(gateArray)}">
+        <defs xmlns="http://www.w3.org/2000/svg">
+            <style xmlns="http://www.w3.org/2000/svg" type="text/css"><![CDATA[
+                ${this.getSVGCSS()}
+            ]]></style>
+        </defs>
+        ${SVGContentString}
+    </svg>
+    `
     return SVGFrame
 }
 
 QVT.prototype.getSVGViewBox = function (gateArray) {
     let boxSize = new PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
     return `0 0 ${boxSize[0]} ${boxSize[1]}`
+}
+
+QVT.prototype.frontlineWidth = 4
+QVT.prototype.backlineWidth = 9
+
+QVT.prototype.getSVGCSS = function(){
+    return `
+    path.frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
+    path.backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
+    `
 }
 
 
@@ -862,9 +881,6 @@ PictureLine.prototype.init = function (node1, realIndex, link,lineId, circuitLin
     this.charge = link.charge
     this.mark = link.mark
 
-    this.frontlineWidth = 4
-    this.backlineWidth = 9
-
 
     this.node1 = node1
     this.node2 = node2
@@ -899,7 +915,7 @@ PictureLine.prototype.renderLine = function () {
     let lineData = this.Line[this.type](this.args)
     let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
     let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
-    let SVGString = `<path d="${SVGLineString}" stroke="white" stroke-width="${this.backlineWidth}" fill="none" class="backline line${this.lineId} circultline${this.circuitLineId}"/>\n<path d="${SVGLineString}" stroke="black" stroke-width="${this.frontlineWidth}" fill="none" class="frontline line${this.lineId} circultline${this.circuitLineId}"/>\n`
+    let SVGString = `<path d="${SVGLineString}" class="backline line${this.lineId} circultline${this.circuitLineId}"/>\n<path d="${SVGLineString}" class="frontline line${this.lineId} circultline${this.circuitLineId}"/>\n`
     return [[this.zIndex, SVGString]]
 }
 
