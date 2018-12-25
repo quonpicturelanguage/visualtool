@@ -163,10 +163,11 @@ CSSObject.prototype.render=function(){
     Object.keys(this.circuitLine).forEach(vi=>{
         let v=this.circuitLine[vi]
         if(!v)return;
+        // stroke:#0000ff !important;
         output.push(`
-        .frontline.circultline${vi}{
-            ${v.color?`stroke:${v.color} !important;`:''}
-            ${v.width?`stroke-width:${v.width} !important;`:''}
+        path.frontline.circultline${vi}{
+            ${v.color?`stroke:${v.color};`:''}
+            ${v.width?`stroke-width:${v.width};`:''}
         }
         `)
     })
@@ -594,11 +595,13 @@ QVT.prototype.buildDymanicCSSObject=function(){
         clickWidth:this.frontlineWidth
     }
 
+    //In this order, hoverCSS will cover clickCSS for one circultLine if they both have settings
     this.clickCSS=new CSSObject().init()
     this.dymanicCSS.push(this.clickCSS)
 
     this.hoverCSS=new CSSObject().init()
     this.dymanicCSS.push(this.hoverCSS)
+
 }
 
 QVT.prototype.bindingSVGEvent=function(){
