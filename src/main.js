@@ -589,7 +589,10 @@ QVT.prototype.listen = function () {
 }
 
 QVT.prototype.buildDymanicCSSObject=function(){
-    this.CSSstorage = {}
+    this.CSSstorage = {
+        clickColor:'#0000ff',
+        clickWidth:this.frontlineWidth
+    }
 
     this.clickCSS=new CSSObject().init()
     this.dymanicCSS.push(this.clickCSS)
@@ -620,8 +623,10 @@ QVT.prototype.bindingSVGEvent=function(){
                 this.hoverCSS.clearCircultLine(line)
                 this.clickCSS.clearCircultLine(line)
             } else {
-                this.hoverCSS.setCircultLine(line,{color:'blue'})
-                this.clickCSS.setCircultLine(line,{color:'blue'})
+                let color=this.CSSstorage.clickColor
+                let width=this.CSSstorage.clickWidth
+                this.hoverCSS.setCircultLine(line,{color:color,width:width})
+                this.clickCSS.setCircultLine(line,{color:color,width:width})
             }
             this.cssnode.innerHTML = this.renderDymanicCSS()
         }

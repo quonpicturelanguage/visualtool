@@ -24,13 +24,18 @@ mz   ,mx ,mcy2,mcy1</textarea>
         <br>
         <input type="button" id='Generate' value="Generate">
         <br>
+        <span id=clickInfo style="display:none">Click ~ color:
+            <input type="color" id="clickColor"> width:
+            <input type="text" id="clickWidth">
+        </span>
+        <br>
         <div id='main'></div>
     </div>
     <script src="./src/main.js"></script>
     <script>
         var qvt = null
         document.getElementById('Generate').onclick = function () {
-            if(!qvt){
+            if (!qvt) {
                 var QVT = exports.QVT
                 qvt = new QVT().init()
                 qvt.setInput(document.getElementById('circult').value)
@@ -40,6 +45,23 @@ mz   ,mx ,mcy2,mcy1</textarea>
                 qvt.getSVGFrame()
                 document.getElementById('main').innerHTML = qvt.SVGFrame
                 qvt.listen()
+                if (1) {
+                    document.getElementById('clickInfo').style.display = ''
+                    document.getElementById('clickColor').value = qvt.CSSstorage.clickColor
+                    document.getElementById('clickColor').oninput = function () {
+                        qvt.CSSstorage.clickColor = document.getElementById('clickColor').value
+                    }
+                    document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth
+                    document.getElementById('clickWidth').oninput = function () {
+                        qvt.CSSstorage.clickWidth = parseFloat(document.getElementById('clickWidth').value)
+                        if (qvt.CSSstorage.clickWidth >= qvt.backlineWidth) {
+                            document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = qvt.backlineWidth - 1
+                        }
+                        if (qvt.CSSstorage.clickWidth <= 2) {
+                            document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = 2
+                        }
+                    }
+                }
             } else {
                 qvt.clear()
                 qvt.setInput(document.getElementById('circult').value)
