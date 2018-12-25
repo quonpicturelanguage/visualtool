@@ -26,9 +26,10 @@ mz   ,mx ,mcy2,mcy1</textarea>
     </div>
     <script src="./src/main.js"></script>
     <script>
+        var qvt = null
         document.getElementById('Generate').onclick = function () {
             var QVT = exports.QVT
-            let qvt = new QVT().init()
+            qvt = new QVT().init()
             qvt.setInput(document.getElementById('circult').value)
             qvt.getNodes()
             qvt.getLines()

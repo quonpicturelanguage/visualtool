@@ -42,13 +42,13 @@ massert(() => [pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 let qvt = new QVT().init()
 qvt.getSVGCSS = function () {
     return Object.getPrototypeOf(qvt).getSVGCSS() + `
-    .frontline.circultline9{
+    .frontline.circultline3{
         stroke:red;stroke-width:${(qvt.frontlineWidth + qvt.backlineWidth) / 2};
     }
     .frontline.circultline1{
         stroke:#bd0086;
     }
-    .frontline.circultline4{
+    .frontline.circultline2{
         stroke:#8d00cb;
     }
     `

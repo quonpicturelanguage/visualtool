@@ -44,7 +44,7 @@ QuonUtils.prototype.init = function () {
  */
 QuonUtils.prototype.GateList = {
     'SpeicalMark': ['e', 'die'],
-    'InitialState': ['sz','sx','sy'],
+    'InitialState': ['sz', 'sx', 'sy'],
     'Measure': ['mz', 'mx', 'my'],
     'ControlGate': ['cz'],
     'MeausreControlGate': ['mcx', 'mcy', 'mcz'],
@@ -149,6 +149,46 @@ let QuonUtilsObject = new QuonUtils().init()
 /**
  * @constructor
  */
+function CSSObject() {
+
+}
+
+CSSObject.prototype.init = function () {
+    this.circuitLine = {}
+    return this
+}
+
+CSSObject.prototype.render=function(){
+    let output=[]
+    Object.keys(this.circuitLine).forEach(vi=>{
+        let v=this.circuitLine[vi]
+        if(!v)return;
+        output.push(`
+        .frontline.circultline${vi}{
+            ${v.color?`stroke:${v.color} !important;`:''}
+            ${v.width?`stroke-width:${v.width} !important;`:''}
+        }
+        `)
+    })
+    return output.join('')
+}
+
+CSSObject.prototype.getCircultLine=function(index){
+    return this.circuitLine[index]
+}
+
+CSSObject.prototype.setCircultLine=function(index,obj){
+    this.circuitLine[index]=obj
+}
+
+CSSObject.prototype.clearCircultLine=function(index){
+    this.circuitLine[index]=null
+}
+
+
+/**
+ * @constructor
+ */
 function QVT() {
 
 }
@@ -156,6 +196,7 @@ function QVT() {
 QVT.prototype.init = function () {
     this.stage = ''
     this.stageInfo = {}
+    this.dymanicCSS = []
     return this
 }
 
@@ -365,6 +406,7 @@ QVT.prototype.getLines = function () {
 QVT.prototype.generateLines = function (gateArray, nodeNet) {
     this.stage = 'generateLines'
     let circuitLines = {}
+    let finalCircuitLines = {}
     let pictureLines = []
     let indexArray = [1, 2, 3, 4, 5, 6, 7, 8]
     let mapTypeArray = ['in', 'out']
@@ -441,8 +483,8 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         if (!link.draw) return;
         let circuitLineId = [-1]
         let lineId = pictureLines.length
-        Object.keys(circuitLines).forEach(v => {
-            if (circuitLineId[0] >= 0 || !circuitLines[v] || circuitLines[v].indexOf(lineId) === -1) return;
+        Object.keys(finalCircuitLines).forEach(v => {
+            if (circuitLineId[0] >= 0 || !finalCircuitLines[v] || finalCircuitLines[v].indexOf(lineId) === -1) return;
             circuitLineId[0] = v
         })
         // todo this.error if -1
@@ -461,9 +503,13 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         }
     }
     for4(line)
+    // build finalCircuitLines
+    Object.keys(circuitLines).filter(v => circuitLines[v]).forEach((v, i) => {
+        finalCircuitLines[i + 1] = circuitLines[v]
+    })
     for4(draw)
     this.stage = ''
-    return [circuitLines, pictureLines]
+    return [finalCircuitLines, pictureLines]
 }
 
 QVT.prototype.getSVGContentString = function () {
@@ -537,19 +583,52 @@ QVT.prototype.getSVGCSS = function () {
 QVT.prototype.listen = function () {
     let isNodejs = typeof document === "undefined"
     if (isNodejs) return;
-    let cssnode = document.createElement('style')
-    document.head.appendChild(cssnode)
+    this.buildDymanicCSSObject()
+    this.bindingSVGEvent()
+}
+
+QVT.prototype.buildDymanicCSSObject=function(){
+    this.clickCSS=new CSSObject().init()
+    this.dymanicCSS.push(this.clickCSS)
+
+    this.hoverCSS=new CSSObject().init()
+    this.dymanicCSS.push(this.hoverCSS)
+}
+
+QVT.prototype.bindingSVGEvent=function(){
+    this.cssnode = document.createElement('style')
+    document.head.appendChild(this.cssnode)
     document.querySelectorAll('.frontline').forEach(v => {
         v.onmouseover = () => {
-            let classname = /(circultline\d+)/.exec(v.getAttribute('class'))[1]
-            cssnode.innerHTML = `
-            .frontline.${classname}{
-                stroke:blue !important;
-                stroke-width:${(this.frontlineWidth + this.backlineWidth) / 2} !important; 
-            }`
+            let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
+            this.hoverCSS.setCircultLine(line,{color:'red',width:(this.frontlineWidth + this.backlineWidth) / 2})
+            this.cssnode.innerHTML = this.renderDymanicCSS()
         }
-        v.onmouseout = () => { cssnode.innerHTML = '' }
+        v.onmouseout = () => {
+            let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
+            this.hoverCSS.clearCircultLine(line)
+            this.cssnode.innerHTML = this.renderDymanicCSS()
+        }
+        v.onclick = ()=> {
+            let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
+            if(this.clickCSS.getCircultLine(line)){
+                this.hoverCSS.clearCircultLine(line)
+                this.clickCSS.clearCircultLine(line)
+            } else {
+                this.hoverCSS.setCircultLine(line,{color:'blue'})
+                this.clickCSS.setCircultLine(line,{color:'blue'})
+            }
+            this.cssnode.innerHTML = this.renderDymanicCSS()
+        }
     })
+}
+
+QVT.prototype.renderDymanicCSS = function () {
+    let dymanicCSSContent = []
+    this.dymanicCSS.forEach(v => {
+        dymanicCSSContent.push(v.render())
+    })
+    return dymanicCSSContent.join('')
 }
 
 
