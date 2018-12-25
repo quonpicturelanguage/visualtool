@@ -203,13 +203,16 @@ QVT.prototype.init = function () {
 QVT.prototype.clear = function () {
     if (this.nodeNet) {
         for (let node in this.nodeNet) {
-            this.nodeNet[node] || this.nodeNet[node].clear()
+            this.nodeNet[node] && this.nodeNet[node].clear()
         }
     }
     if (this.pictureLines) {
         for (let line in this.pictureLines) {
-            this.pictureLines[line] || this.pictureLines[line].clear()
+            this.pictureLines[line] && this.pictureLines[line].clear()
         }
+    }
+    if (this.cssnode){
+        this.cssnode.innerHTML=''
     }
 }
 
@@ -581,13 +584,13 @@ QVT.prototype.getSVGCSS = function () {
 }
 
 QVT.prototype.listen = function () {
-    let isNodejs = typeof document === "undefined"
-    if (isNodejs) return;
     this.buildDymanicCSSObject()
     this.bindingSVGEvent()
 }
 
 QVT.prototype.buildDymanicCSSObject=function(){
+    this.CSSstorage = {}
+
     this.clickCSS=new CSSObject().init()
     this.dymanicCSS.push(this.clickCSS)
 
@@ -596,6 +599,8 @@ QVT.prototype.buildDymanicCSSObject=function(){
 }
 
 QVT.prototype.bindingSVGEvent=function(){
+    let isNodejs = typeof document === "undefined"
+    if (isNodejs) return;
     this.cssnode = document.createElement('style')
     document.head.appendChild(this.cssnode)
     document.querySelectorAll('.frontline').forEach(v => {

@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div id='main'>
+    <div>
         <br>
         <textarea name="circult" id="circult" cols="30" rows="10" spellcheck="false">,
 cz1_1,cz2,cz5 ,cz6 
@@ -23,20 +23,34 @@ h3   ,h2 ,sd  ,sd1
 mz   ,mx ,mcy2,mcy1</textarea>
         <br>
         <input type="button" id='Generate' value="Generate">
+        <br>
+        <div id='main'></div>
     </div>
     <script src="./src/main.js"></script>
     <script>
         var qvt = null
         document.getElementById('Generate').onclick = function () {
-            var QVT = exports.QVT
-            qvt = new QVT().init()
-            qvt.setInput(document.getElementById('circult').value)
-            qvt.getNodes()
-            qvt.getLines()
-            qvt.getSVGContentString()
-            qvt.getSVGFrame()
-            document.getElementById('main').innerHTML = qvt.SVGFrame
-            qvt.listen()
+            if(!qvt){
+                var QVT = exports.QVT
+                qvt = new QVT().init()
+                qvt.setInput(document.getElementById('circult').value)
+                qvt.getNodes()
+                qvt.getLines()
+                qvt.getSVGContentString()
+                qvt.getSVGFrame()
+                document.getElementById('main').innerHTML = qvt.SVGFrame
+                qvt.listen()
+            } else {
+                qvt.clear()
+                qvt.setInput(document.getElementById('circult').value)
+                qvt.getNodes()
+                qvt.getLines()
+                qvt.getSVGContentString()
+                qvt.getSVGFrame()
+                document.getElementById('main').innerHTML = qvt.SVGFrame
+                qvt.bindingSVGEvent()
+                qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
+            }
         }
     </script>
 </body>
