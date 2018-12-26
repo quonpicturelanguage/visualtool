@@ -153,41 +153,48 @@ function CSSObject() {
 
 }
 
-CSSObject.prototype.init = function () {
+CSSObject.prototype.init = function (qvt) {
     this.circuitLine = {}
+    this.qvt = qvt
     return this
 }
 
-CSSObject.prototype.render=function(){
-    let output=[]
-    Object.keys(this.circuitLine).forEach(vi=>{
-        let v=this.circuitLine[vi]
-        if(!v)return;
+CSSObject.prototype.render = function () {
+    let output = []
+    Object.keys(this.circuitLine).forEach(vi => {
+        let v = this.circuitLine[vi]
+        if (!v) return;
         // stroke:#0000ff !important;
         output.push(`
         path.frontline.circultline${vi}{
-            ${v.color?`stroke:${v.color};`:''}
-            ${v.width?`stroke-width:${v.width};`:''}
-            ${v.opacity?`opacity:${v.opacity};`:''}
+            ${v.color ? `stroke:${v.color};` : ''}
+            ${v.width ? `stroke-width:${v.width};` : ''}
+            ${v.opacity ? `opacity:${v.opacity};` : ''}
         }
         path.backline.circultline${vi}{
-            ${v.opacity?`opacity:${v.opacity};`:''}
+            ${v.opacity ? `opacity:${v.opacity};` : ''}
+        }
+        circle.charge.circultline${vi}{
+            ${v.color ? `fill:${v.color};` : ''}
+            ${v.width ? `r:${v.width / 2 + this.qvt.chargeRadiusPlus};` : ''}
+            ${v.opacity ? `opacity:${v.opacity};` : ''}
         }
         `)
+        // r:${this.chargeRadius+2};fill:red
     })
     return output.join('')
 }
 
-CSSObject.prototype.getCircultLine=function(index){
+CSSObject.prototype.getCircultLine = function (index) {
     return this.circuitLine[index]
 }
 
-CSSObject.prototype.setCircultLine=function(index,obj){
-    this.circuitLine[index]=obj
+CSSObject.prototype.setCircultLine = function (index, obj) {
+    this.circuitLine[index] = obj
 }
 
-CSSObject.prototype.clearCircultLine=function(index){
-    this.circuitLine[index]=null
+CSSObject.prototype.clearCircultLine = function (index) {
+    this.circuitLine[index] = null
 }
 
 
@@ -216,8 +223,8 @@ QVT.prototype.clear = function () {
             this.pictureLines[line] && this.pictureLines[line].clear()
         }
     }
-    if (this.cssnode){
-        this.cssnode.innerHTML=''
+    if (this.cssnode) {
+        this.cssnode.innerHTML = ''
     }
 }
 
@@ -579,12 +586,19 @@ QVT.prototype.getSVGViewBox = function (gateArray) {
 QVT.prototype.frontlineWidth = 4
 QVT.prototype.backlineWidth = 9
 
+QVT.prototype.chargeRadiusPlus = 4
+
+
 QVT.prototype.getSVGCSS = function () {
     return `
-    .frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
-    .backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
+    path.frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
+    path.backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
 
-    /* .frontline:hover{stroke:blue;stroke-width:${0.7 * this.frontlineWidth + 0.3 * this.backlineWidth};} */
+    /* path.frontline:hover{stroke:blue;stroke-width:${0.7 * this.frontlineWidth + 0.3 * this.backlineWidth};} */
+
+    circle.charge{r:${this.frontlineWidth / 2 + this.chargeRadiusPlus};fill:black}
+
+    /* circle.charge:hover{r:${this.chargeRadius + 2};fill:red} */
     `
 }
 
@@ -593,31 +607,31 @@ QVT.prototype.listen = function () {
     this.bindingSVGEvent()
 }
 
-QVT.prototype.buildDymanicCSSObject=function(){
+QVT.prototype.buildDymanicCSSObject = function () {
     this.CSSstorage = {
-        clickColor:'#0000ff',
-        clickWidth:this.frontlineWidth,
-        clickOpacity:1
+        clickColor: '#0000ff',
+        clickWidth: this.frontlineWidth,
+        clickOpacity: 1
     }
 
     //In this order, hoverCSS will cover clickCSS for one circultLine if they both have settings
-    this.clickCSS=new CSSObject().init()
+    this.clickCSS = new CSSObject().init(this)
     this.dymanicCSS.push(this.clickCSS)
 
-    this.hoverCSS=new CSSObject().init()
+    this.hoverCSS = new CSSObject().init(this)
     this.dymanicCSS.push(this.hoverCSS)
 
 }
 
-QVT.prototype.bindingSVGEvent=function(){
+QVT.prototype.bindingSVGEvent = function () {
     let isNodejs = typeof document === "undefined"
     if (isNodejs) return;
     this.cssnode = document.createElement('style')
     document.head.appendChild(this.cssnode)
-    document.querySelectorAll('.frontline').forEach(v => {
+    document.querySelectorAll('.frontline,.charge').forEach(v => {
         v.onmouseover = () => {
             let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
-            this.hoverCSS.setCircultLine(line,{color:'red',width:(this.frontlineWidth + this.backlineWidth) / 2})
+            this.hoverCSS.setCircultLine(line, { color: 'red', width: (this.frontlineWidth + this.backlineWidth) / 2 })
             this.cssnode.innerHTML = this.renderDymanicCSS()
         }
         v.onmouseout = () => {
@@ -625,17 +639,17 @@ QVT.prototype.bindingSVGEvent=function(){
             this.hoverCSS.clearCircultLine(line)
             this.cssnode.innerHTML = this.renderDymanicCSS()
         }
-        v.onclick = ()=> {
+        v.onclick = () => {
             let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
-            if(this.clickCSS.getCircultLine(line)){
+            if (this.clickCSS.getCircultLine(line)) {
                 this.hoverCSS.clearCircultLine(line)
                 this.clickCSS.clearCircultLine(line)
             } else {
-                let color=this.CSSstorage.clickColor
-                let width=this.CSSstorage.clickWidth
-                let opacity=this.CSSstorage.clickOpacity
-                this.hoverCSS.setCircultLine(line,{color:color,width:width,opacity:opacity})
-                this.clickCSS.setCircultLine(line,{color:color,width:width,opacity:opacity})
+                let color = this.CSSstorage.clickColor
+                let width = this.CSSstorage.clickWidth
+                let opacity = this.CSSstorage.clickOpacity
+                this.hoverCSS.setCircultLine(line, { color: color, width: width, opacity: opacity })
+                this.clickCSS.setCircultLine(line, { color: color, width: width, opacity: opacity })
             }
             this.cssnode.innerHTML = this.renderDymanicCSS()
         }
@@ -823,7 +837,7 @@ CircuitNode.prototype.single = function (nodestr) {
     this.type = match[0]
 
     if (['i', 'x', 'y', 'z'].indexOf(this.type) !== -1) {
-        let reverseCharge = (v => ~~(v === 0))(match[1])
+        let reverseCharge = (v => ~~(v !== 0))(match[1])
         let linkArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
         let zIndex = [4, 3, 2, 1]
         let chargeArray = {
@@ -1074,6 +1088,10 @@ PictureLine.prototype.clear = function () {
     delete (this.rawArg)
 }
 
+PictureLine.prototype.getCommonClass=function(){
+    return `circultline${this.circuitLineId} line${this.lineId}`
+}
+
 PictureLine.prototype.render = function () {
 
     let output = []
@@ -1087,15 +1105,17 @@ PictureLine.prototype.renderLine = function () {
     let lineData = this.Line[this.type](this.args)
     let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
     let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
-    let SVGString = `<path d="${SVGLineString}" class="backline circultline${this.circuitLineId} line${this.lineId}"/>\n<path d="${SVGLineString}" class="frontline circultline${this.circuitLineId} line${this.lineId}"/>\n`
+    let SVGString = `<path d="${SVGLineString}" class="backline ${this.getCommonClass()}"/>\n<path d="${SVGLineString}" class="frontline ${this.getCommonClass()}"/>\n`
     return [[this.zIndex, SVGString]]
 }
 
 PictureLine.prototype.renderCharge = function () {
-    // todo
-    // return [[this.zIndex, 'renderCharge']]
-    return []
+    let chargeData = this.Charge[this.type](this.args)
+    let SVGChargeData = this.calculateSVGPosition(this.combine(chargeData))
+    let SVGString = `<circle cx="${SVGChargeData[0]}" cy="${SVGChargeData[1]}" class="charge ${this.getCommonClass()}"/>\n`
+    return [[this.zIndex, SVGString]]
 }
+
 PictureLine.prototype.renderMark = function () {
     // todo
     // return [[this.zIndex, 'renderMark']]

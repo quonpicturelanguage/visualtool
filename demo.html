@@ -11,17 +11,19 @@
 <body>
     <div>
         <br>
-        <textarea name="circult" id="circult" cols="30" rows="10" spellcheck="false">,
-cz1_1,cz2,cz5 ,cz6 
-cz3  ,cz4,cz7 ,cz8 
-cz1_1,cz2,cz5 ,cz6 
-cz3  ,cz4,cz7 ,cz8 
+        <textarea name="circult" id="circult" cols="30" rows="16" spellcheck="false" style="float:left">i,x,y,z
+i1,x1,y1,z1
+cz1_1,cz2,cz5,cz6
+cz3,cz4,cz7,cz8
+cz1_1,cz2,cz5,cz6
+cz3,cz4,cz7,cz8
 ,
-h    ,h1 ,s   ,s1  
-h3   ,h2 ,sd  ,sd1 
-     ,cz9,cz10,my 
-mz   ,mx ,mcy2,mcy1</textarea>
-        <br>
+h,h1,s,s1
+h3,h2,sd,sd1
+,cz9,cz10,my
+mz,mx ,mcy2,mcy1</textarea>
+        <pre id='formatedGateArray' style="float:left;margin-left:2em;font-family:monospace;"></pre>
+        <br style="clear:both">
         <input type="button" id='Generate' value="Generate">
         <br>
         <span id=clickInfo style="display:none">
@@ -35,7 +37,6 @@ mz   ,mx ,mcy2,mcy1</textarea>
             <input type="text" id="clickWidth" style="width:3em">
             <span> opacity: </span>
             <input type="text" id="clickOpacity" style="width:3em">
-            <br>
         </span>
         <div id='main' style="width:100%"></div>
     </div>
@@ -99,6 +100,7 @@ mz   ,mx ,mcy2,mcy1</textarea>
                 qvt.bindingSVGEvent()
                 qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
             }
+            document.getElementById('formatedGateArray').innerText=qvt.getFormatInput()
         }
     </script>
 </body>
