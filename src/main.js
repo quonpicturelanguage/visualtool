@@ -168,6 +168,10 @@ CSSObject.prototype.render=function(){
         path.frontline.circultline${vi}{
             ${v.color?`stroke:${v.color};`:''}
             ${v.width?`stroke-width:${v.width};`:''}
+            ${v.opacity?`opacity:${v.opacity};`:''}
+        }
+        path.backline.circultline${vi}{
+            ${v.opacity?`opacity:${v.opacity};`:''}
         }
         `)
     })
@@ -592,7 +596,8 @@ QVT.prototype.listen = function () {
 QVT.prototype.buildDymanicCSSObject=function(){
     this.CSSstorage = {
         clickColor:'#0000ff',
-        clickWidth:this.frontlineWidth
+        clickWidth:this.frontlineWidth,
+        clickOpacity:1
     }
 
     //In this order, hoverCSS will cover clickCSS for one circultLine if they both have settings
@@ -628,8 +633,9 @@ QVT.prototype.bindingSVGEvent=function(){
             } else {
                 let color=this.CSSstorage.clickColor
                 let width=this.CSSstorage.clickWidth
-                this.hoverCSS.setCircultLine(line,{color:color,width:width})
-                this.clickCSS.setCircultLine(line,{color:color,width:width})
+                let opacity=this.CSSstorage.clickOpacity
+                this.hoverCSS.setCircultLine(line,{color:color,width:width,opacity:opacity})
+                this.clickCSS.setCircultLine(line,{color:color,width:width,opacity:opacity})
             }
             this.cssnode.innerHTML = this.renderDymanicCSS()
         }

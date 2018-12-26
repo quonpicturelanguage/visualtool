@@ -112,19 +112,19 @@
 
 <!-- content START -->
 
-<input id="input_A" spellcheck="false" type="text" style="width: 100%;height: 1.5em;" placeholder="input_A">
-</input> 
-<br/>
+<h1>Quon Visual Tool</h1>
 
-<textarea id="input_B" spellcheck="false" style="width: 100%; height: 10.2em;overflow:y;resize:none;" placeholder="input_B"></textarea>
-<br/>
+<h3>Links</h3>
+<ul>
+    <li><a href="./demo.html">demo</a></li>
+    <li><a href="./docs/">docs (nothing here now)</a></li>
+</ul>
 
-<input type="button" value="ADD" onclick="func_ADD()" />
+<h3>What is Qoun?</h3>
+<p>TBA</p>
 
-<input type="button" value="GOTO" onclick="func_GOTO()"   />
-<br/>
-
-<pre id='printf_target'><span class="weakresult">result</span><br></pre>
+<h3>What is Qoun-Visual-Tool?</h3>
+<p>TBA</p>
 
 <!-- content END -->
 
@@ -134,25 +134,7 @@
 __id__=['mobilecss','printf_target','background','input_A','input_B'];
 __all__=['isMobile','urlmap','printf','func_ADD','func_GOTO','antlr4'];
 
-printf_target = document.getElementById('printf_target');
 background = document.getElementById('background');
-input_A = document.getElementById('input_A');
-input_B = document.getElementById('input_B');
-
-
-(function(){
-    document.getElementsByClassName('middletop')[0].style.marginTop=~~(innerHeight/10)+'px';
-    printf = function(str,weak) {
-        var node=document.createElement('span');
-        if (weak){
-            node.setAttribute('class','weakresult');
-        } else {
-            node.setAttribute('class','result');
-        }
-        node.innerText=str+'\n';
-        printf_target.appendChild(node);
-    }
-})();
 
 var search=window.location.search
 var smap={}
@@ -169,26 +151,6 @@ if(smap.hasOwnProperty('s')){
 
 }
 
-function func_ADD(){
-    //printf(input_A.value);
-    console.clear();
-    runOne();
-}
-function func_GOTO(){
-    printf(input_B.value);
-}
-
-
-input_A.value='input_A';
-input_B.value=String.raw`input_B`;
-
-
-function runOne(){
-    var input = input_A.value;
-
-    printf(input);
-}
-runOne();
 </script>
 </body>
 </html>

@@ -24,15 +24,31 @@ mz   ,mx ,mcy2,mcy1</textarea>
         <br>
         <input type="button" id='Generate' value="Generate">
         <br>
-        <span id=clickInfo style="display:none">Click ~ color:
-            <input type="color" id="clickColor"> width:
-            <input type="text" id="clickWidth">
+        <span id=clickInfo style="display:none">
+            <span>SVG size:</span>
+            <input id='SVGSizeInput' type="range" min="0" max="105" step="1" value="100" style="vertical-align: middle">
+            <br>
+            <span>Click ~</span>
+            <span> color: </span>
+            <input type="color" id="clickColor" style="width:3em">
+            <span> width: </span>
+            <input type="text" id="clickWidth" style="width:3em">
+            <span> opacity: </span>
+            <input type="text" id="clickOpacity" style="width:3em">
+            <br>
         </span>
-        <br>
-        <div id='main'></div>
+        <div id='main' style="width:100%"></div>
     </div>
     <script src="./src/main.js"></script>
     <script>
+
+        let SVGSizeInput = document.getElementById('SVGSizeInput')
+        if (SVGSizeInput) SVGSizeInput.oninput = function () {
+            let delta = (~~SVGSizeInput.value);
+            let big = { '101': 120, '102': 150, '103': 200, '104': 300, '105': 500 }[delta]
+            document.getElementById('main').style.width = (big ? big : delta) + '%'
+        }
+
         var qvt = null
         document.getElementById('Generate').onclick = function () {
             if (!qvt) {
@@ -48,17 +64,27 @@ mz   ,mx ,mcy2,mcy1</textarea>
                 if (1) {
                     document.getElementById('clickInfo').style.display = ''
                     document.getElementById('clickColor').value = qvt.CSSstorage.clickColor
-                    document.getElementById('clickColor').oninput = function () {
+                    document.getElementById('clickColor').onchange = function () {
                         qvt.CSSstorage.clickColor = document.getElementById('clickColor').value
                     }
                     document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth
-                    document.getElementById('clickWidth').oninput = function () {
+                    document.getElementById('clickWidth').onchange = function () {
                         qvt.CSSstorage.clickWidth = parseFloat(document.getElementById('clickWidth').value)
                         if (qvt.CSSstorage.clickWidth >= qvt.backlineWidth) {
                             document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = qvt.backlineWidth - 1
                         }
                         if (qvt.CSSstorage.clickWidth <= 2) {
                             document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = 2
+                        }
+                    }
+                    document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity
+                    document.getElementById('clickOpacity').onchange = function () {
+                        qvt.CSSstorage.clickOpacity = parseFloat(document.getElementById('clickOpacity').value)
+                        if (qvt.CSSstorage.clickOpacity >= 1) {
+                            document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 1
+                        }
+                        if (qvt.CSSstorage.clickOpacity <= 0.01) {
+                            document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 0.01
                         }
                     }
                 }
