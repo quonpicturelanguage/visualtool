@@ -143,6 +143,14 @@ QuonUtils.prototype.i = function (index) {
     return index <= 4 ? index + 4 : index - 4;
 }
 
+/**
+ * get mark content from args
+ * @param {String|null} argsStr 
+ */
+QuonUtils.prototype.getMarkContent = function (argsStr) {
+    return markContent = argsStr ? argsStr.slice(1, -1) : ''
+}
+
 let QuonUtilsObject = new QuonUtils().init()
 
 
@@ -177,6 +185,13 @@ CSSObject.prototype.render = function () {
         circle.charge.circultline${vi}{
             ${v.color ? `fill:${v.color};` : ''}
             ${v.width ? `r:${v.width / 2 + this.qvt.chargeRadiusPlus};` : ''}
+            ${v.opacity ? `opacity:${v.opacity};` : ''}
+        }
+        text.mark.circultline${vi}{
+            ${v.color ? `fill:${v.color};` : ''}
+            ${v.opacity ? `opacity:${v.opacity};` : ''}
+        }
+        text.markback.circultline${vi}{
             ${v.opacity ? `opacity:${v.opacity};` : ''}
         }
         `)
@@ -607,8 +622,8 @@ QVT.prototype.getSVGCSS = function () {
 
     /* circle.charge:hover{r:${this.chargeRadius + 2};fill:red} */
 
-    text.mark{font-size:${this.markFontSize};}
-    foreignObject.mark{font-size:${this.markFontSize};}
+    text.mark{font-size:${this.markFontSize};fill:black;}
+    text.markback{font-size:${this.markFontSize};stroke:white;fill:white;stroke-width:1;}
     
     `
 }
@@ -639,7 +654,7 @@ QVT.prototype.bindingSVGEvent = function () {
     if (isNodejs) return;
     this.cssnode = document.createElement('style')
     document.head.appendChild(this.cssnode)
-    document.querySelectorAll('.frontline,.charge').forEach(v => {
+    document.querySelectorAll('.frontline,.charge,.mark').forEach(v => {
         v.onmouseover = () => {
             let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
             this.hoverCSS.setCircultLine(line, { color: 'red', width: (this.frontlineWidth + this.backlineWidth) / 2 })
@@ -814,6 +829,7 @@ CircuitNode.prototype.measure = function (nodestr) {
     let match = this.util.GateMatch.Measure(nodestr)
     this.type = match[0]
     let rotationType = (v => ~~(v !== 0))(match[1])
+    let markContent = this.util.getMarkContent(match[2])
     let zIndex = {
         '0': [2, 1],
         '1': [1, 2]
@@ -823,14 +839,14 @@ CircuitNode.prototype.measure = function (nodestr) {
     let s = 's'
     let t = 't'
     let linkArray = {
-        mz: [[1, 2, a, zIndex[0]], [3, 4, a, zIndex[1]]],
-        mx: [[1, 4, b, zIndex[0]], [2, 3, a, zIndex[1]]],
-        my: [[1, 3, a, zIndex[0]], [2, 4, a, zIndex[1]]],
+        mz: [[1, 2, a, zIndex[0], ''], [3, 4, a, zIndex[1], '-']],
+        mx: [[1, 4, b, zIndex[1], ''], [2, 3, a, zIndex[0], '-']],
+        my: [[1, 3, a, zIndex[0], ''], [2, 4, a, zIndex[1], '-']],
     }[this.type]
     let args = [0.3, 0.2]
 
     linkArray.forEach(v => {
-        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]] })
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]], mark: markContent ? v[4] + markContent : null })
     })
     // draw: [functionname:String,args:Array,zIndex:Number]
     return this
@@ -1020,16 +1036,16 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, bit2Index, i
     let match = this.util.GateMatch.MeausreControlGate(nodestr)
     this.type = match[0]
 
-    let markContent = match[4] ? match[4].slice(1, -1) : 'i'
+    let markContent = this.util.getMarkContent(match[3]) || 'i'
 
     if (isControlBit) {
-        markContent = markContent + ' -' + markContent
-        // draw mark only
-        this.innernalLink[1] = Object.assign(this.innernalLink[1], { targetNode: this.SELF, targetIndex: 3, draw: ['direct', [], 1], mark: markContent })
-        // draw: [functionname:String,args:Array,zIndex:Number]
+        // markContent = markContent + ' -' + markContent
+        // // draw mark only
+        // this.innernalLink[1] = Object.assign(this.innernalLink[1], { targetNode: this.SELF, targetIndex: 3, draw: ['direct', [], 1], mark: markContent })
+        // // draw: [functionname:String,args:Array,zIndex:Number]
     } else {
         let linkArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
-        let reverseCharge = (v => ~~(v === 0))(match[2])
+        let reverseCharge = (v => ~~(v !== 0))(match[2])
         let zIndex = [4, 3, 2, 1]
         let markArray = {
             mcx: [0, 1, 1, 0],
@@ -1132,8 +1148,8 @@ PictureLine.prototype.markFontSize = 18
 PictureLine.prototype.renderMark = function () {
     let markData = this.Mark[this.type](this.args)
     let SVGMarkData = this.calculateSVGPosition(this.combine(markData))
-    let SVGString = `<text x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}">&nbsp;${this.mark}</text>`
-    // SVGString=`<foreignObject x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" width="150" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}>&nbsp;${this.mark}</foreignObject>`
+    let SVGString = `<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="markback ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n`
+    // SVGString=`<foreignObject x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" width="150" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}>&nbsp;${this.mark}</foreignObject>\n`
     return [[this.zIndex, SVGString]]
 }
 
