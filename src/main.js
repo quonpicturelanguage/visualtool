@@ -136,11 +136,19 @@ QuonUtils.prototype.di2s = function (deep, bitIndex) {
 }
 
 /**
+ * check whether the index means the point in the first group
+ * @param {Number} index 1~8
+ */
+QuonUtils.prototype.lp = function (index) {
+    return index <= 4
+}
+
+/**
  * find the other point index in the pair
  * @param {Number} index 1~8
  */
-QuonUtils.prototype.i = function (index) {
-    return index <= 4 ? index + 4 : index - 4;
+QuonUtils.prototype.pp = function (index) {
+    return this.lp(index) ? index + 4 : index - 4;
 }
 
 /**
@@ -181,24 +189,24 @@ CSSObject.prototype.render = function (addCSSimportant) {
         // stroke:#0000ff !important;
         output.push(`
         path.frontline.circultline${vi}{
-            ${v.color!=null ? `stroke:${v.color}${im};` : ''}
-            ${v.width!=null ? `stroke-width:${v.width}${im};` : ''}
-            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
+            ${v.color != null ? `stroke:${v.color}${im};` : ''}
+            ${v.width != null ? `stroke-width:${v.width}${im};` : ''}
+            ${v.opacity != null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         path.backline.circultline${vi}{
-            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
+            ${v.opacity != null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         circle.charge.circultline${vi}{
-            ${v.color!=null ? `fill:${v.color}${im};` : ''}
-            ${v.width!=null ? `r:${v.width / 2 + this.qvt.chargeRadiusPlus}${im};` : ''}
-            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
+            ${v.color != null ? `fill:${v.color}${im};` : ''}
+            ${v.width != null ? `r:${v.width / 2 + this.qvt.chargeRadiusPlus}${im};` : ''}
+            ${v.opacity != null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         text.mark.circultline${vi}{
-            ${v.color!=null ? `fill:${v.color}${im};` : ''}
-            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
+            ${v.color != null ? `fill:${v.color}${im};` : ''}
+            ${v.opacity != null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         text.markback.circultline${vi}{
-            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
+            ${v.opacity != null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         `)
     })
@@ -468,7 +476,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
         drawIndex[0]++
         if (!link.line) return;
         let points = [[dd, ii, realIndex], [link.targetNode.deep, link.targetNode.bitIndex, link.targetIndex]]
-        points = points.map(v => v[2] <= 4 ? v : [v[0] + 1, v[1], v[2] - 4])
+        points = points.map(v => this.util.lp(v[2]) ? v : [v[0] + 1, v[1], this.util.pp(v[2])])
         // start point of a new line element
         let v = points[0]
         let cn = null
@@ -730,8 +738,8 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
     let mapArray = [[1, 5], [2, 6], [3, 7], [4, 8]]
     mapArray.forEach((v, i) => {
         // rebuild map
-        if (this.deep) this.indexMap[v[0]] = this.nodeNet[this.util.di2s(this.deep - 1, this.bitIndex)].indexMap[v[1]] - 4;
-        this.indexMap[v[1]] = this.indexMap[v[0]] + 4
+        if (this.deep) this.indexMap[v[0]] = this.util.pp(this.nodeNet[this.util.di2s(this.deep - 1, this.bitIndex)].indexMap[v[1]]);
+        this.indexMap[v[1]] = this.util.pp(this.indexMap[v[0]])
     })
 
     return this
@@ -763,16 +771,15 @@ CircuitNode.prototype.buildPosition = function () {
 
     let positionIndexArray = [1, 2, 3, 4, 5, 6, 7, 8]
     positionIndexArray.forEach(v => {
-        this.position[this.indexMap[v]] = this.calculatePosition(this.deep, this.bitIndex, v)
+        if (this.util.lp(v))
+            this.position[this.indexMap[v]] = this.calculatePosition(this.deep, this.bitIndex, v)
+        else
+            this.position[this.indexMap[v]] = this.calculatePosition(this.deep + 1, this.bitIndex, this.util.pp(v))
     })
 }
 
 CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
-    if (positionIndex <= 4)
-        return [bitIndex + 0.25 + (positionIndex - 1) * 0.5 / 3, deep + 1];
-    else
-        return this.calculatePosition(deep + 1, bitIndex, positionIndex - 4);
-    // .map((v,i)=>i==1?v+0.01:v);
+    return [bitIndex + 0.25 + (positionIndex - 1) * 0.5 / 3, deep + 1];
 }
 
 
@@ -819,7 +826,7 @@ CircuitNode.prototype.initial = function (nodestr) {
     let args = [0.3, 0.2]
 
     linkArray.forEach(v => {
-        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] - 4], [s, v[0] - 4]] })
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, this.util.pp(v[1])], [s, this.util.pp(v[0])]] })
     })
     // draw: [functionname:String,args:Array,zIndex:Number]
     return this
@@ -851,7 +858,7 @@ CircuitNode.prototype.measure = function (nodestr) {
     let args = [0.3, 0.2]
 
     linkArray.forEach(v => {
-        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]], mark: markContent ? this.util.combineSignAndMarkContent(v[4], markContent) : null })
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, this.util.pp(v[1])], [s, this.util.pp(v[0])]], mark: markContent ? this.util.combineSignAndMarkContent(v[4], markContent) : null })
     })
     // draw: [functionname:String,args:Array,zIndex:Number]
     return this
@@ -900,7 +907,7 @@ CircuitNode.prototype.single = function (nodestr) {
         let s = 's'
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, points: [[s, v[0]], [s, v[1] - 4], [s, v[1]], [s, v[0] + 4]] })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -925,7 +932,7 @@ CircuitNode.prototype.single = function (nodestr) {
         }[rotationType]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, v[1] - 4], [s, v[1]], [s, v[0] + 4]] })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -963,7 +970,7 @@ CircuitNode.prototype.single = function (nodestr) {
         }
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, v[1] - 4], [s, v[1]], [s, v[0] + 4]] })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
