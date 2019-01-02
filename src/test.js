@@ -47,7 +47,7 @@ qvt.getSVGCSS = function () {
     this.clickCSS.setCircultLine(1, { color: '#bd0086' })
     this.clickCSS.setCircultLine(2, { color: '#8d00cb' })
 
-    return Object.getPrototypeOf(this).getSVGCSS.call(this) + this.renderDymanicCSS();
+    return Object.getPrototypeOf(this).getSVGCSS.call(this) + this.renderDymanicCSS(false);
 }
 
 

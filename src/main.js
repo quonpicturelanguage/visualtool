@@ -172,35 +172,35 @@ CSSObject.prototype.init = function (qvt) {
     return this
 }
 
-CSSObject.prototype.render = function () {
+CSSObject.prototype.render = function (addCSSimportant) {
     let output = []
+    let im = addCSSimportant ? ' !important' : ''
     Object.keys(this.circuitLine).forEach(vi => {
         let v = this.circuitLine[vi]
         if (!v) return;
         // stroke:#0000ff !important;
         output.push(`
         path.frontline.circultline${vi}{
-            ${v.color ? `stroke:${v.color};` : ''}
-            ${v.width ? `stroke-width:${v.width};` : ''}
-            ${v.opacity ? `opacity:${v.opacity};` : ''}
+            ${v.color!=null ? `stroke:${v.color}${im};` : ''}
+            ${v.width!=null ? `stroke-width:${v.width}${im};` : ''}
+            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         path.backline.circultline${vi}{
-            ${v.opacity ? `opacity:${v.opacity};` : ''}
+            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         circle.charge.circultline${vi}{
-            ${v.color ? `fill:${v.color};` : ''}
-            ${v.width ? `r:${v.width / 2 + this.qvt.chargeRadiusPlus};` : ''}
-            ${v.opacity ? `opacity:${v.opacity};` : ''}
+            ${v.color!=null ? `fill:${v.color}${im};` : ''}
+            ${v.width!=null ? `r:${v.width / 2 + this.qvt.chargeRadiusPlus}${im};` : ''}
+            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         text.mark.circultline${vi}{
-            ${v.color ? `fill:${v.color};` : ''}
-            ${v.opacity ? `opacity:${v.opacity};` : ''}
+            ${v.color!=null ? `fill:${v.color}${im};` : ''}
+            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         text.markback.circultline${vi}{
-            ${v.opacity ? `opacity:${v.opacity};` : ''}
+            ${v.opacity!=null ? `opacity:${v.opacity}${im};` : `opacity:1${im};`}
         }
         `)
-        // r:${this.chargeRadius+2};fill:red
     })
     return output.join('')
 }
@@ -663,12 +663,12 @@ QVT.prototype.bindingSVGEvent = function () {
         v.onmouseover = () => {
             let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
             this.hoverCSS.setCircultLine(line, { color: 'red', width: (this.frontlineWidth + this.backlineWidth) / 2 })
-            this.cssnode.innerHTML = this.renderDymanicCSS()
+            this.cssnode.innerHTML = this.renderDymanicCSS(true)
         }
         v.onmouseout = () => {
             let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
             this.hoverCSS.clearCircultLine(line)
-            this.cssnode.innerHTML = this.renderDymanicCSS()
+            this.cssnode.innerHTML = this.renderDymanicCSS(true)
         }
         v.onclick = () => {
             let line = /circultline(\d+)/.exec(v.getAttribute('class'))[1]
@@ -682,15 +682,15 @@ QVT.prototype.bindingSVGEvent = function () {
                 this.hoverCSS.setCircultLine(line, { color: color, width: width, opacity: opacity })
                 this.clickCSS.setCircultLine(line, { color: color, width: width, opacity: opacity })
             }
-            this.cssnode.innerHTML = this.renderDymanicCSS()
+            this.cssnode.innerHTML = this.renderDymanicCSS(true)
         }
     })
 }
 
-QVT.prototype.renderDymanicCSS = function () {
+QVT.prototype.renderDymanicCSS = function (addCSSimportant) {
     let dymanicCSSContent = []
     this.dymanicCSS.forEach(v => {
-        dymanicCSSContent.push(v.render())
+        dymanicCSSContent.push(v.render(addCSSimportant))
     })
     return dymanicCSSContent.join('')
 }
