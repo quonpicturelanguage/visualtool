@@ -24,7 +24,7 @@ function massert(fun) {
     } catch (error) {
         console.log(`fail: error happen`)
     }
-    
+
 }
 /////////////////////////////////////////////////
 let cn = new CircuitNode().init(2, 0)
@@ -41,17 +41,13 @@ massert(() => [pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 
 let qvt = new QVT().init()
 qvt.getSVGCSS = function () {
-    return Object.getPrototypeOf(qvt).getSVGCSS() + `
-    .frontline.circultline3{
-        stroke:red;stroke-width:${(qvt.frontlineWidth + qvt.backlineWidth) / 2};
-    }
-    .frontline.circultline1{
-        stroke:#bd0086;
-    }
-    .frontline.circultline2{
-        stroke:#8d00cb;
-    }
-    `
+    this.buildDymanicCSSObject()
+
+    this.clickCSS.setCircultLine(3, { color: 'red', width: (this.frontlineWidth + this.backlineWidth) / 2, opacity: 0.3 })
+    this.clickCSS.setCircultLine(1, { color: '#bd0086' })
+    this.clickCSS.setCircultLine(2, { color: '#8d00cb' })
+
+    return Object.getPrototypeOf(this).getSVGCSS.call(this) + this.renderDymanicCSS();
 }
 
 

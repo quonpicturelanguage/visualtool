@@ -425,9 +425,15 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
     let pictureLines = []
     let indexArray = [1, 2, 3, 4, 5, 6, 7, 8]
     let mapTypeArray = ['in', 'out']
+    /**
+     * @returns {CircuitNode}
+     */
     let n = (deep, bitIndex) => {
         return nodeNet[this.util.di2s(deep, bitIndex)]
     }
+    /**
+     * @param {CircuitNode} node 
+     */
     let l = (node, realIndex, mapType) => {
         return node.getMap(mapType, realIndex)
     }
@@ -588,6 +594,7 @@ QVT.prototype.backlineWidth = 9
 
 QVT.prototype.chargeRadiusPlus = 4
 
+QVT.prototype.markFontSize = 18 // Do not work here, have to set it in PictureLine.
 
 QVT.prototype.getSVGCSS = function () {
     return `
@@ -599,6 +606,10 @@ QVT.prototype.getSVGCSS = function () {
     circle.charge{r:${this.frontlineWidth / 2 + this.chargeRadiusPlus};fill:black}
 
     /* circle.charge:hover{r:${this.chargeRadius + 2};fill:red} */
+
+    text.mark{font-size:${this.markFontSize};}
+    foreignObject.mark{font-size:${this.markFontSize};}
+    
     `
 }
 
@@ -1088,7 +1099,7 @@ PictureLine.prototype.clear = function () {
     delete (this.rawArg)
 }
 
-PictureLine.prototype.getCommonClass=function(){
+PictureLine.prototype.getCommonClass = function () {
     return `circultline${this.circuitLineId} line${this.lineId}`
 }
 
@@ -1116,10 +1127,14 @@ PictureLine.prototype.renderCharge = function () {
     return [[this.zIndex, SVGString]]
 }
 
+PictureLine.prototype.markFontSize = 18
+
 PictureLine.prototype.renderMark = function () {
-    // todo
-    // return [[this.zIndex, 'renderMark']]
-    return []
+    let markData = this.Mark[this.type](this.args)
+    let SVGMarkData = this.calculateSVGPosition(this.combine(markData))
+    let SVGString = `<text x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}">&nbsp;${this.mark}</text>`
+    // SVGString=`<foreignObject x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" width="150" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}>&nbsp;${this.mark}</foreignObject>`
+    return [[this.zIndex, SVGString]]
 }
 
 PictureLine.prototype.combine = function (distribution) {
