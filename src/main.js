@@ -151,6 +151,11 @@ QuonUtils.prototype.getMarkContent = function (argsStr) {
     return markContent = argsStr ? argsStr.slice(1, -1) : ''
 }
 
+QuonUtils.prototype.combineSignAndMarkContent = function (signStr, markContent) {
+    if (signStr === '-' && markContent[0] === '-') return markContent.slice(1);
+    return signStr + markContent
+}
+
 let QuonUtilsObject = new QuonUtils().init()
 
 
@@ -609,7 +614,7 @@ QVT.prototype.backlineWidth = 9
 
 QVT.prototype.chargeRadiusPlus = 4
 
-QVT.prototype.markFontSize = 18 // Do not work here, have to set it in PictureLine.
+QVT.prototype.markFontSize = 16 // Do not work here, have to set it in PictureLine.
 
 QVT.prototype.getSVGCSS = function () {
     return `
@@ -846,7 +851,7 @@ CircuitNode.prototype.measure = function (nodestr) {
     let args = [0.3, 0.2]
 
     linkArray.forEach(v => {
-        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]], mark: markContent ? v[4] + markContent : null })
+        this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, v[1] + 4], [s, v[0] + 4]], mark: markContent ? this.util.combineSignAndMarkContent(v[4], markContent) : null })
     })
     // draw: [functionname:String,args:Array,zIndex:Number]
     return this
@@ -1055,7 +1060,7 @@ CircuitNode.prototype.meausreControl = function (nodestr, nodestr2, bit2Index, i
         let minusArray = ['', '', '-', '-']
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: (markArray[i] ^ reverseCharge) ? minusArray[i] + markContent : null })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['direct', [], zIndex[i]], line: 1, mark: (markArray[i] ^ reverseCharge) ? this.util.combineSignAndMarkContent(minusArray[i], markContent) : null })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -1143,7 +1148,7 @@ PictureLine.prototype.renderCharge = function () {
     return [[this.zIndex, SVGString]]
 }
 
-PictureLine.prototype.markFontSize = 18
+PictureLine.prototype.markFontSize = 16
 
 PictureLine.prototype.renderMark = function () {
     let markData = this.Mark[this.type](this.args)
