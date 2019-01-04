@@ -1,30 +1,41 @@
-let isNodejs = typeof document === "undefined"
+var isNodejs = typeof document === "undefined"
 if (isNodejs) {
-    var QVT = require('./main.js').QVT
-    var CircuitNode = require('./main.js').CircuitNode
-    var PictureLine = require('./main.js').PictureLine
+    // var qvtMain = require('./main.js')
+    var qvtMain = require('./qvt3d.js')
 } else {
-    var QVT = exports.QVT
-    var CircuitNode = exports.CircuitNode
-    var PictureLine = exports.PictureLine
+    var qvtMain = exports
 }
+var QVT = qvtMain.QVT
+var CircuitNode = qvtMain.CircuitNode
+var PictureLine = qvtMain.PictureLine
 
-let massertResult = [0, 0]
+let massertResult = [0, 0, []]
 function massert(fun) {
-    let a, b
+    let a, b, text
     massertResult[1]++
     try {
         [a, b] = fun()
         if (String(a) !== String(b)) {
-            console.log(`fail: ${a} != ${b}`)
+            text = `fail: ${a} != ${b} in\n${fun.toString()}\n`
+            console.log(text)
+            massertResult[2].push(text)
         } else {
             massertResult[0]++
-            console.log(b)
+            text = `${b}`
+            console.log(text)
+            massertResult[2].push(text)
         }
     } catch (error) {
-        console.log(`fail: error happen`)
+        text = `fail: error happen in\n${fun.toString()}\n`
+        console.log(text)
+        massertResult[2].push(text)
     }
 
+}
+function massertPrint() {
+    console.log(`\n\n==========\n`)
+    massertResult[2].forEach(v=>console.log(v+'\n'))
+    console.log(`==========\n${massertResult[0]}/${massertResult[1]} pass`)
 }
 /////////////////////////////////////////////////
 let cn = new CircuitNode().init(2, 0)
@@ -99,4 +110,4 @@ if (isNodejs) {
 }
 
 /////////////////////////////////////////////////
-console.log(`\n\n\n${massertResult[0]}/${massertResult[1]} pass`)
+massertPrint()

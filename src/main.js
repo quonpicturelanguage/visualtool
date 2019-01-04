@@ -240,6 +240,9 @@ QVT.prototype.init = function () {
     return this
 }
 
+/**
+ * delete cycle reference and injected CSS
+ */
 QVT.prototype.clear = function () {
     if (this.nodeNet) {
         for (let node in this.nodeNet) {
@@ -778,6 +781,12 @@ CircuitNode.prototype.buildPosition = function () {
     })
 }
 
+/**
+ * calculation a n-d position
+ * @param {Number} deep 
+ * @param {Number} bitIndex 
+ * @param {Number} positionIndex in 1~4
+ */
 CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
     return [bitIndex + 0.25 + (positionIndex - 1) * 0.5 / 3, deep + 1];
 }
@@ -1128,7 +1137,7 @@ PictureLine.prototype.clear = function () {
 }
 
 PictureLine.prototype.getCommonClass = function () {
-    return `circultline${this.circuitLineId} line${this.lineId}`
+    return `circultline${this.circuitLineId} line${this.lineId} gate${this.node1.type} deep${this.node1.deep} bit1index${this.node1.bitIndex} bit2index${this.node2.bitIndex}`
 }
 
 PictureLine.prototype.render = function () {
@@ -1169,6 +1178,10 @@ PictureLine.prototype.combine = function (distribution) {
     return this.sourcePosition[0].map((v, i) => distribution.map((v, j) => v * this.sourcePosition[j][i]).reduce((a, b) => a + b))
 }
 
+/**
+ * convert a position to 2-d position
+ * @param {Number[]} position 
+ */
 PictureLine.prototype.calculateSVGPosition = function (position) {
     return position.map(v => 100 * v)
 }
