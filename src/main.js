@@ -587,7 +587,7 @@ QVT.prototype.generateSVGContentString = function (pictureLines, nodeNet) {
                 pictureLayerMap[v[0]] = [v[1]];
         })
     }
-    let SVGContentString = Object.keys(pictureLayerMap).sort().map(layer => {
+    let SVGContentString = Object.keys(pictureLayerMap).sort((a,b)=>parseFloat(a)-parseFloat(b)).map(layer => {
         let v = pictureLayerMap[layer].reduce((a, b) => a + b)
         return `<g class='layer${layer}'>\n${v}</g>\n`
     }).reduce((a, b) => a + b)
@@ -1171,7 +1171,7 @@ PictureLine.prototype.renderMark = function () {
     let SVGMarkData = this.calculateSVGPosition(this.combine(markData))
     let SVGString = `<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="markback ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n`
     // SVGString=`<foreignObject x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" width="150" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}>&nbsp;${this.mark}</foreignObject>\n`
-    return [[this.renderOrder(), SVGString]]
+    return [[this.renderOrder()+100000, SVGString]]
 }
 
 PictureLine.prototype.combine = function (distribution) {
