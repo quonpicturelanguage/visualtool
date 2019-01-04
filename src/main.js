@@ -1154,14 +1154,14 @@ PictureLine.prototype.renderLine = function () {
     let SVGLineData = lineData.map(v => [v[0], v.slice(1).map(v => this.calculateSVGPosition(this.combine(v)))])
     let SVGLineString = JSON.stringify(SVGLineData).replace(/[^-.MLQ0-9]+/g, ' ').trim()
     let SVGString = `<path d="${SVGLineString}" class="backline ${this.getCommonClass()}"/>\n<path d="${SVGLineString}" class="frontline ${this.getCommonClass()}"/>\n`
-    return [[this.zIndex, SVGString]]
+    return [[this.renderOrder(), SVGString]]
 }
 
 PictureLine.prototype.renderCharge = function () {
     let chargeData = this.Charge[this.type](this.args)
     let SVGChargeData = this.calculateSVGPosition(this.combine(chargeData))
     let SVGString = `<circle cx="${SVGChargeData[0]}" cy="${SVGChargeData[1]}" class="charge ${this.getCommonClass()}"/>\n`
-    return [[this.zIndex, SVGString]]
+    return [[this.renderOrder(), SVGString]]
 }
 
 PictureLine.prototype.markFontSize = 16
@@ -1171,7 +1171,7 @@ PictureLine.prototype.renderMark = function () {
     let SVGMarkData = this.calculateSVGPosition(this.combine(markData))
     let SVGString = `<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="markback ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n`
     // SVGString=`<foreignObject x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" width="150" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}>&nbsp;${this.mark}</foreignObject>\n`
-    return [[this.zIndex, SVGString]]
+    return [[this.renderOrder(), SVGString]]
 }
 
 PictureLine.prototype.combine = function (distribution) {
@@ -1184,6 +1184,10 @@ PictureLine.prototype.combine = function (distribution) {
  */
 PictureLine.prototype.calculateSVGPosition = function (position) {
     return position.map(v => 100 * v)
+}
+
+PictureLine.prototype.renderOrder = function(){
+    return this.zIndex
 }
 
 PictureLine.prototype.Line = {}
