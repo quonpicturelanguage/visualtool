@@ -43,6 +43,7 @@ mz,mx,mcy2(k),mcy1</textarea>
     <script src="./src/main.js"></script>
     <script src="./src/qvt3d.js"></script>
     <script>
+        var QVT = exports.QVT
 
         let SVGSizeInput = document.getElementById('SVGSizeInput')
         if (SVGSizeInput) SVGSizeInput.oninput = function () {
@@ -54,7 +55,6 @@ mz,mx,mcy2(k),mcy1</textarea>
         var qvt = null
         document.getElementById('Generate').onclick = function () {
             if (!qvt) {
-                var QVT = exports.QVT
                 qvt = new QVT().init()
                 qvt.setInput(document.getElementById('circult').value)
                 qvt.getNodes()
@@ -101,7 +101,7 @@ mz,mx,mcy2(k),mcy1</textarea>
                 qvt.bindingSVGEvent()
                 qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
             }
-            document.getElementById('formatedGateArray').innerText=qvt.getFormatInput()
+            document.getElementById('formatedGateArray').innerText = qvt.getFormatInput()
         }
     </script>
 </body>

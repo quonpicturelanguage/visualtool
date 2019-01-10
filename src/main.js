@@ -1255,14 +1255,17 @@ PictureLine.prototype.Line.parallelPositive = (a) => [
 PictureLine.prototype.Charge.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 PictureLine.prototype.Mark.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 
+
+
+
+
+
+
+
+
+
 QVT.prototype.CircuitNode=CircuitNode
 QVT.prototype.PictureLine=PictureLine
-
-
-
-
-
-
 
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT

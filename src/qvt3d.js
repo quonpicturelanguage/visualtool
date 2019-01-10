@@ -43,13 +43,17 @@ QuonProjector.prototype.applyMatrix4 = function (mat4) {
     return (v, i, a) => mat4[i].map((iv, ii) => iv * (a[ii] || 0)).reduce((a, b) => a + b)
 }
 
-QuonProjector.prototype.array3to4 = function (number4) {
+QuonProjector.prototype.array3to40 = function (number4) {
     let aa;
     return (v, i, a) => i === 0 ? ((aa = Array.from(a)), aa.push(number4), aa) : null
 }
 
-QuonProjector.prototype.array4to3 = function () {
+QuonProjector.prototype.array4to30 = function () {
     return (v, i, a) => i === 0 ? a.slice(0, -1) : i === 1 ? a[a.length - 1] : null
+}
+
+QuonProjector.prototype.outerProduct=function(){
+    
 }
 
 
@@ -59,7 +63,6 @@ let QVTfromMain = QVT
 
 function QVT3d() {
 	QVTfromMain.call(this);
-	return this;
 }
 
 QVT3d.prototype = Object.create(QVTfromMain.prototype);
@@ -136,28 +139,26 @@ PictureLine3d.prototype.renderOrder = function () {
     return 100 + this.zIndex * 0.001 + this.combine(this.Charge[this.type](this.args)).map(this.projector.applyMatrix4('0,-0.7,0.71'))[0]
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 QVT3d.prototype.CircuitNode=CircuitNode3d
 QVT3d.prototype.PictureLine=PictureLine3d
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 exports.QVT = QVT3d
-exports.CircuitNode = CircuitNode3d
-exports.PictureLine = PictureLine3d
