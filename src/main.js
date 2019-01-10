@@ -730,7 +730,7 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
 
     this.innernalLink = {}
     this.externalLink = {}
-    this.indexMap = {}
+    this.indexMap = {} // save the picture index for the real index
     let linkArray = [1, 2, 3, 4, 5, 6, 7, 8]
     linkArray.forEach(v => {
         this.innernalLink[v] = { targetNode: this.NO, targetIndex: 0, draw: null }
@@ -770,10 +770,14 @@ CircuitNode.prototype.util = QuonUtilsObject
 
 CircuitNode.prototype.buildPosition = function () {
     // should be executed after nodeNet before circuitLines
-    this.position = {}
+    this.position = {} // save the picture position for real index
 
     let positionIndexArray = [1, 2, 3, 4, 5, 6, 7, 8]
     positionIndexArray.forEach(v => {
+        // todo
+        // may be wrong
+        // should check later
+        // ? this.position[i]=...this,indexMap[v])
         if (this.util.lp(v))
             this.position[this.indexMap[v]] = this.calculatePosition(this.deep, this.bitIndex, v)
         else
