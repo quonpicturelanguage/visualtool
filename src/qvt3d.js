@@ -31,6 +31,7 @@ QuonProjector.prototype.buildMatrix4FromString = function (mat4Str) {
     let maxNumber = Math.max(4, Math.max.apply(null, rawArray.map(v => v.length)))
     //shape into matrix
     let numberArray = rawArray.map(v => v.concat(Array.from({ length: maxNumber - v.length }).map(v => 0)))
+    //shape into 4*4
     return numberArray.concat([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]).slice(0, 4).map(v => v.slice(0, 4))
 }
 
@@ -40,7 +41,7 @@ QuonProjector.prototype.buildMatrix4FromString = function (mat4Str) {
  */
 QuonProjector.prototype.applyMatrix4 = function (mat4) {
     if (typeof (mat4) === 'string') mat4 = this.buildMatrix4FromString(mat4);
-    return (v, i, a) => mat4[i].map((iv, ii) => iv * (a[ii] || 0)).reduce((a, b) => a + b)
+    return (v, i, a) => mat4[i].map((iv, ii) => iv * (a[ii] != null ? a[ii] : ii !== 3 ? 0 : 1)).reduce((a, b) => a + b)
 }
 
 QuonProjector.prototype.array3to40 = function (number4) {
@@ -52,8 +53,46 @@ QuonProjector.prototype.array4to30 = function () {
     return (v, i, a) => i === 0 ? a.slice(0, -1) : i === 1 ? a[a.length - 1] : null
 }
 
-QuonProjector.prototype.outerProduct=function(){
-    
+/**
+ * demo: [1,1,1,-1].map(QuonProjector.prototype.innerProduct0([1,2,3,4]))[0]
+ * @param {Number[]} a2 
+ */
+QuonProjector.prototype.innerProduct0 = function (a2) {
+    return (v, i, a1) => i === 0 ? a1.map((v, i) => v * a2[i]).reduce((a, b) => a + b) : null
+}
+
+/**
+ * demo: [1,0,0].map(QuonProjector.prototype.outerProduct([0,1,0]))
+ * @param {Number[]} a2 
+ */
+QuonProjector.prototype.outerProduct = function (a2) {
+    return (v, i, a1) => {
+        let ii = { '0': [1, 2], '1': [2, 0], '2': [0, 1] }[i]
+        return a1[ii[0]] * a2[ii[1]] - a1[ii[1]] * a2[ii[0]]
+    }
+}
+
+/**
+ * demo: [3,4,0].map(QuonProjector.prototype.normalize0())[0]
+ */
+QuonProjector.prototype.normalize0 = function () {
+    return (v, i, a) => {
+        if (i !== 0) return null;
+        let scale = Math.sqrt(a.slice(0, 3).map(v => v * v).reduce((a, b) => a + b))
+        if (scale < 0.000000001) return a.map((v, i) => i === 3 ? 1 : 0);
+        return a.map((v, i) => i === 3 ? 1 : v / scale);
+    }
+}
+
+QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
+    let u, v, w
+    [u, v, w] = v3.map(this.normalize0())[0]
+    return [
+        [u * u + (1 - u * u) * c, u * v * (1 - c) - w * s, u * w * (1 - c) + v * s, 0],
+        [u * v * (1 - c) + w * s, v * v + (1 - v * v) * c, v * w * (1 - c) - u * s, 0],
+        [u * w * (1 - c) - v * s, v * w * (1 - c) + u * s, w * w + (1 - w * w) * c, 0],
+        [0, 0, 0, 1]
+    ]
 }
 
 
@@ -62,7 +101,7 @@ let QounProjectorObject = new QuonProjector().init()
 let QVTfromMain = QVT
 
 function QVT3d() {
-	QVTfromMain.call(this);
+    QVTfromMain.call(this);
 }
 
 QVT3d.prototype = Object.create(QVTfromMain.prototype);
@@ -80,8 +119,8 @@ QVT3d.prototype.backlineWidth = QVT3d.prototype.frontlineWidth + 2
 let CircuitNodefromMain = QVT.prototype.CircuitNode
 
 function CircuitNode3d() {
-	CircuitNodefromMain.call(this);
-	return this;
+    CircuitNodefromMain.call(this);
+    return this;
 }
 
 CircuitNode3d.prototype = Object.create(CircuitNodefromMain.prototype);
@@ -118,8 +157,8 @@ CircuitNode3d.prototype.calculatePosition = function (deep, bitIndex, positionIn
 let PictureLinefromMain = QVT.prototype.PictureLine
 
 function PictureLine3d() {
-	CircuitNodefromMain.call(this);
-	return this;
+    CircuitNodefromMain.call(this);
+    return this;
 }
 
 PictureLine3d.prototype = Object.create(PictureLinefromMain.prototype);
@@ -158,7 +197,7 @@ PictureLine3d.prototype.renderOrder = function () {
 
 
 
-QVT3d.prototype.CircuitNode=CircuitNode3d
-QVT3d.prototype.PictureLine=PictureLine3d
+QVT3d.prototype.CircuitNode = CircuitNode3d
+QVT3d.prototype.PictureLine = PictureLine3d
 
 exports.QVT = QVT3d
