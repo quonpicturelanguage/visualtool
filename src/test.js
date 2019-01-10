@@ -6,8 +6,6 @@ if (isNodejs) {
     var qvtMain = exports
 }
 var QVT = qvtMain.QVT
-var CircuitNode = qvtMain.CircuitNode
-var PictureLine = qvtMain.PictureLine
 
 let massertResult = [0, 0, []]
 function massert(fun) {
@@ -34,13 +32,13 @@ function massert(fun) {
 }
 function massertPrint() {
     console.log(`\n\n==========\n`)
-    massertResult[2].forEach(v=>console.log(v+'\n'))
+    massertResult[2].forEach(v => console.log(v + '\n'))
     console.log(`==========\n${massertResult[0]}/${massertResult[1]} pass`)
 }
 /////////////////////////////////////////////////
-let cn = new CircuitNode().init(2, 0)
+let cn = new new QVT().CircuitNode().init(2, 0)
 ////////////////////////
-let pl = new PictureLine()
+let pl = new new QVT().PictureLine()
 
 pl.sourcePosition = [[2, 1], [0, 1], [1, 0]]
 massert(() => [pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7]])

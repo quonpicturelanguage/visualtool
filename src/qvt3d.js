@@ -5,8 +5,6 @@ if (isNodejs) {
     var qvtMain = exports
 }
 var QVT = qvtMain.QVT
-var CircuitNode = qvtMain.CircuitNode
-var PictureLine = qvtMain.PictureLine
 
 function QuonProjector() {
 
@@ -57,16 +55,36 @@ QuonProjector.prototype.array4to3 = function () {
 
 let QounProjectorObject = new QuonProjector().init()
 
+let QVTfromMain = QVT
 
-QVT.prototype.getSVGViewBox = function (gateArray) {
-    let boxSize = new PictureLine().calculateSVGPosition([gateArray[0].length + 0.2, gateArray.length + 2])
+function QVT3d() {
+	QVTfromMain.call(this);
+	return this;
+}
+
+QVT3d.prototype = Object.create(QVTfromMain.prototype);
+QVT3d.prototype.constructor = QVT3d;
+
+QVT3d.prototype.getSVGViewBox = function (gateArray) {
+    let boxSize = new this.PictureLine().calculateSVGPosition([gateArray[0].length + 0.2, gateArray.length + 2])
     return `0 0 ${boxSize[0]} ${boxSize[1]}`
 }
 
-QVT.prototype.backlineWidth = QVT.prototype.frontlineWidth + 2
+QVT3d.prototype.backlineWidth = QVT3d.prototype.frontlineWidth + 2
 
 
-CircuitNode.prototype.projector = QounProjectorObject
+
+let CircuitNodefromMain = QVT.prototype.CircuitNode
+
+function CircuitNode3d() {
+	CircuitNodefromMain.call(this);
+	return this;
+}
+
+CircuitNode3d.prototype = Object.create(CircuitNodefromMain.prototype);
+CircuitNode3d.prototype.constructor = CircuitNode3d;
+
+CircuitNode3d.prototype.projector = QounProjectorObject
 
 /**
  * calculation a n-d position
@@ -74,7 +92,7 @@ CircuitNode.prototype.projector = QounProjectorObject
  * @param {Number} bitIndex 
  * @param {Number} positionIndex in 1~4
  */
-CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
+CircuitNode3d.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
     let position = [bitIndex + 0.4, deep + 1, 0]
     switch (positionIndex) {
         case 1:
@@ -93,20 +111,33 @@ CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionInde
     return position;
 }
 
-PictureLine.prototype.projector = QounProjectorObject
+
+let PictureLinefromMain = QVT.prototype.PictureLine
+
+function PictureLine3d() {
+	CircuitNodefromMain.call(this);
+	return this;
+}
+
+PictureLine3d.prototype = Object.create(PictureLinefromMain.prototype);
+PictureLine3d.prototype.constructor = PictureLine3d;
+
+PictureLine3d.prototype.projector = QounProjectorObject
 
 /**
  * convert a position to 2-d position
  * @param {Number[]} position 
  */
-PictureLine.prototype.calculateSVGPosition = function (position) {
+PictureLine3d.prototype.calculateSVGPosition = function (position) {
     return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,0.3;,1,0.8')).filter((v, i) => i <= 1)
 }
 
-PictureLine.prototype.renderOrder = function () {
+PictureLine3d.prototype.renderOrder = function () {
     return 100 + this.zIndex * 0.001 + this.combine(this.Charge[this.type](this.args)).map(this.projector.applyMatrix4('0,-0.7,0.71'))[0]
 }
 
+QVT3d.prototype.CircuitNode=CircuitNode3d
+QVT3d.prototype.PictureLine=PictureLine3d
 
 
 
@@ -127,7 +158,6 @@ PictureLine.prototype.renderOrder = function () {
 
 
 
-
-exports.QVT = QVT
-exports.CircuitNode = CircuitNode
-exports.PictureLine = PictureLine
+exports.QVT = QVT3d
+exports.CircuitNode = CircuitNode3d
+exports.PictureLine = PictureLine3d

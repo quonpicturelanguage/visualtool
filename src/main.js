@@ -358,14 +358,14 @@ QVT.prototype.convertToNodes = function (gateArray) {
             if (util.GateMatch.SpeicalMark(nodestr)) {
                 bitDeep[ii]++
                 let match = util.GateMatch.SpeicalMark(nodestr)
-                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet)
                 if (match[0] === 'die') bitStatus[ii] = 'c';
                 continue
             }
             if (util.GateMatch.InitialState(nodestr)) {
                 // if it is a initial state
                 bitDeep[ii]++
-                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).initial(nodestr)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).initial(nodestr)
                 bitStatus[ii] = 'q'
                 continue
             }
@@ -373,7 +373,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 // if it is a measure operator
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
-                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).measure(nodestr)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).measure(nodestr)
                 bitStatus[ii] = 'c'
                 continue
             }
@@ -381,7 +381,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 // if it is a Single Bit Gate
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
-                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).single(nodestr)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).single(nodestr)
                 continue
             }
             if (util.GateMatch.ControlGate(nodestr)) {
@@ -401,8 +401,8 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 let nodestr2 = gateArray[dd][bit2Index]
                 bitDeep[bit2Index]++
                 let isControlBit = match[1] % 2 == 1
-                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
-                nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
+                nodeNet[s(dd, bit2Index)] = new this.CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
                 continue
             }
             if (util.GateMatch.MeausreControlGate(nodestr)) {
@@ -425,8 +425,8 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 if (isControlBit && bitStatus[ii] !== 'c' || !isControlBit && bitStatus[bit2Index] !== 'c') this.error('bit has not been measured');
                 // the target bit must be quantum
                 if (isControlBit && bitStatus[bit2Index] !== 'q' || !isControlBit && bitStatus[ii] !== 'q') this.error('bit has been measured');
-                nodeNet[s(dd, ii)] = new CircuitNode().init(ii, dd, nodeNet).meausreControl(nodestr, nodestr2, bit2Index, isControlBit)
-                nodeNet[s(dd, bit2Index)] = new CircuitNode().init(bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, ii, !isControlBit)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).meausreControl(nodestr, nodestr2, bit2Index, isControlBit)
+                nodeNet[s(dd, bit2Index)] = new this.CircuitNode().init(bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, ii, !isControlBit)
                 continue
             }
             this.error('can not match any gate')
@@ -540,7 +540,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
             circuitLineId[0] = v
         })
         // todo this.error if -1
-        let pl = new PictureLine().init(node, realIndex, link, lineId, circuitLineId[0])
+        let pl = new this.PictureLine().init(node, realIndex, link, lineId, circuitLineId[0])
         pictureLines.push(pl)
     }
     let for4 = (fun) => {
@@ -587,7 +587,7 @@ QVT.prototype.generateSVGContentString = function (pictureLines, nodeNet) {
                 pictureLayerMap[v[0]] = [v[1]];
         })
     }
-    let SVGContentString = Object.keys(pictureLayerMap).sort((a,b)=>parseFloat(a)-parseFloat(b)).map(layer => {
+    let SVGContentString = Object.keys(pictureLayerMap).sort((a, b) => parseFloat(a) - parseFloat(b)).map(layer => {
         let v = pictureLayerMap[layer].reduce((a, b) => a + b)
         return `<g class='layer${layer}'>\n${v}</g>\n`
     }).reduce((a, b) => a + b)
@@ -616,7 +616,7 @@ QVT.prototype.generateSVGFrame = function (SVGContentString, gateArray) {
 }
 
 QVT.prototype.getSVGViewBox = function (gateArray) {
-    let boxSize = new PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
+    let boxSize = new this.PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
     return `0 0 ${boxSize[0]} ${boxSize[1]}`
 }
 
@@ -1171,7 +1171,7 @@ PictureLine.prototype.renderMark = function () {
     let SVGMarkData = this.calculateSVGPosition(this.combine(markData))
     let SVGString = `<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="markback ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n<text x="${SVGMarkData[0] + this.markFontSize / 8}" y="${SVGMarkData[1] + this.markFontSize}" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}">${this.mark}</text>\n`
     // SVGString=`<foreignObject x="${SVGMarkData[0]}" y="${SVGMarkData[1]}" width="150" class="mark ${this.getCommonClass()}" style="font-size:${this.markFontSize}>&nbsp;${this.mark}</foreignObject>\n`
-    return [[this.renderOrder()+100000, SVGString]]
+    return [[this.renderOrder() + 100000, SVGString]]
 }
 
 PictureLine.prototype.combine = function (distribution) {
@@ -1186,7 +1186,7 @@ PictureLine.prototype.calculateSVGPosition = function (position) {
     return position.map(v => 100 * v)
 }
 
-PictureLine.prototype.renderOrder = function(){
+PictureLine.prototype.renderOrder = function () {
     return this.zIndex
 }
 
@@ -1255,7 +1255,8 @@ PictureLine.prototype.Line.parallelPositive = (a) => [
 PictureLine.prototype.Charge.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 PictureLine.prototype.Mark.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 
-
+QVT.prototype.CircuitNode=CircuitNode
+QVT.prototype.PictureLine=PictureLine
 
 
 
@@ -1265,5 +1266,3 @@ PictureLine.prototype.Mark.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT
-exports.CircuitNode = CircuitNode
-exports.PictureLine = PictureLine
