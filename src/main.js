@@ -164,6 +164,29 @@ QuonUtils.prototype.combineSignAndMarkContent = function (signStr, markContent) 
     return signStr + markContent
 }
 
+/**
+ * Create a file with the given attributes and download it.
+ * from FactoryUtils.createAndDownloadFile
+ * https://github.com/google/blockly/blob/master/demos/blockfactory/factory_utils.js
+ * @param {string} contents The contents of the file.
+ * @param {string} filename The name of the file to save to.
+ * @param {string} fileType The type of the file to save.
+ */
+QuonUtils.prototype.createAndDownloadFile = function (contents, filename, fileType) {
+    var data = new Blob([contents], { type: 'text/' + fileType });
+    var clickEvent = new MouseEvent("click", {
+        "view": window,
+        "bubbles": true,
+        "cancelable": false
+    });
+
+    var a = document.createElement('a');
+    a.href = window.URL.createObjectURL(data);
+    a.download = filename;
+    a.textContent = 'Download file!';
+    a.dispatchEvent(clickEvent);
+};
+
 let QuonUtilsObject = new QuonUtils().init()
 
 
@@ -641,7 +664,7 @@ QVT.prototype.getSVGCSS = function () {
     text.mark{font-size:${this.markFontSize};fill:black;}
     text.markback{font-size:${this.markFontSize};stroke:white;fill:white;stroke-width:1;}
     
-    `
+    ` + this.renderDymanicCSS(false)
 }
 
 QVT.prototype.listen = function () {
@@ -706,6 +729,9 @@ QVT.prototype.renderDymanicCSS = function (addCSSimportant) {
     return dymanicCSSContent.join('')
 }
 
+QVT.prototype.download = function (filename) {
+    this.util.createAndDownloadFile(this.SVGFrame,filename||'export.svg','svg')
+}
 
 /**
  * @constructor
@@ -1268,8 +1294,8 @@ PictureLine.prototype.Mark.parallelPositive = (a) => [0.25, 0.25, 0.25, 0.25]
 
 
 
-QVT.prototype.CircuitNode=CircuitNode
-QVT.prototype.PictureLine=PictureLine
+QVT.prototype.CircuitNode = CircuitNode
+QVT.prototype.PictureLine = PictureLine
 
 if (typeof exports === "undefined") exports = {};
 exports.QVT = QVT

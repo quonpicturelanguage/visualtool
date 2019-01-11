@@ -6,6 +6,7 @@ if (isNodejs) {
     var qvtMain = exports
 }
 var QVT = qvtMain.QVT
+var QVT = qvtMain.QVT3d
 
 let massertResult = [0, 0, []]
 function massert(fun) {
@@ -49,16 +50,12 @@ massert(() => [pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 ////////////////////////
 
 let qvt = new QVT().init()
-qvt.getSVGCSS = function () {
-    this.buildDymanicCSSObject()
 
-    this.clickCSS.setCircultLine(3, { color: 'red', width: (this.frontlineWidth + this.backlineWidth) / 2, opacity: 0.3 })
-    this.clickCSS.setCircultLine(1, { color: '#bd0086' })
-    this.clickCSS.setCircultLine(2, { color: '#8d00cb' })
+qvt.buildDymanicCSSObject()
 
-    return Object.getPrototypeOf(this).getSVGCSS.call(this) + this.renderDymanicCSS(false);
-}
-
+qvt.clickCSS.setCircultLine(3, { color: 'red', width: (this.frontlineWidth + this.backlineWidth) / 2, opacity: 0.3 })
+qvt.clickCSS.setCircultLine(1, { color: '#bd0086' })
+qvt.clickCSS.setCircultLine(2, { color: '#8d00cb' })
 
 qvt.setInput(`
 sx   ,sz ,sy  ,i    

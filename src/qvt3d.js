@@ -73,20 +73,33 @@ QuonProjector.prototype.outerProduct = function (a2) {
 }
 
 /**
+ * demo: [3,4,0].map(QuonProjector.prototype.scale0())[0]
+ */
+QuonProjector.prototype.scale0 = function(){
+    return (v, i, a) => i === 0 ? Math.sqrt(a.slice(0, 3).map(v => v * v).reduce((a, b) => a + b)) : null
+}
+
+/**
  * demo: [3,4,0].map(QuonProjector.prototype.normalize0())[0]
  */
 QuonProjector.prototype.normalize0 = function () {
     return (v, i, a) => {
         if (i !== 0) return null;
-        let scale = Math.sqrt(a.slice(0, 3).map(v => v * v).reduce((a, b) => a + b))
+        let scale = a.map(this.scale0())[0]
         if (scale < 0.000000001) return a.map((v, i) => i === 3 ? 1 : 0);
         return a.map((v, i) => i === 3 ? 1 : v / scale);
     }
 }
 
+/**
+ * demo: QuonProjector.prototype.buildRotateMatrix4([0,0,1],0,1)
+ * @param {Number[]} v3 direction vector
+ * @param {Number} c cos(theta)
+ * @param {Number} s sin(theta)
+ */
 QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
     let u, v, w
-    [u, v, w] = v3.map(this.normalize0())[0]
+    [u, v, w] = v3.map(this.normalize0())[0].slice(0,3)
     return [
         [u * u + (1 - u * u) * c, u * v * (1 - c) - w * s, u * w * (1 - c) + v * s, 0],
         [u * v * (1 - c) + w * s, v * v + (1 - v * v) * c, v * w * (1 - c) - u * s, 0],
@@ -200,4 +213,5 @@ PictureLine3d.prototype.renderOrder = function () {
 QVT3d.prototype.CircuitNode = CircuitNode3d
 QVT3d.prototype.PictureLine = PictureLine3d
 
-exports.QVT = QVT3d
+exports.QVT = QVT
+exports.QVT3d = QVT3d

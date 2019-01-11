@@ -25,8 +25,10 @@ mz,mx,mcy2(k),mcy1</textarea>
         <pre id='formatedGateArray' style="float:left;margin-left:2em;font-family:monospace;"></pre>
         <br style="clear:both">
         <input type="button" id='Generate' value="Generate">
-        <br>
+        <input type="button" id='Generate3d' value="Generate 3d">
         <span id=clickInfo style="display:none">
+            <input type="button" id='Export' value="Export">
+            <br>
             <span>SVG size:</span>
             <input id='SVGSizeInput' type="range" min="0" max="105" step="1" value="100" style="vertical-align: middle">
             <br>
@@ -44,6 +46,8 @@ mz,mx,mcy2(k),mcy1</textarea>
     <script src="./src/qvt3d.js"></script>
     <script>
         var QVT = exports.QVT
+        var QVT3d = exports.QVT3d
+        var QVTS = QVT
 
         let SVGSizeInput = document.getElementById('SVGSizeInput')
         if (SVGSizeInput) SVGSizeInput.oninput = function () {
@@ -52,10 +56,38 @@ mz,mx,mcy2(k),mcy1</textarea>
             document.getElementById('main').style.width = (big ? big : delta) + '%'
         }
 
+        function bindingDOM(qvt) {
+            document.getElementById('clickInfo').style.display = ''
+            document.getElementById('clickColor').value = qvt.CSSstorage.clickColor
+            document.getElementById('clickColor').onchange = function () {
+                qvt.CSSstorage.clickColor = document.getElementById('clickColor').value
+            }
+            document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth
+            document.getElementById('clickWidth').onchange = function () {
+                qvt.CSSstorage.clickWidth = parseFloat(document.getElementById('clickWidth').value)
+                if (qvt.CSSstorage.clickWidth >= qvt.backlineWidth) {
+                    document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = qvt.backlineWidth - 1
+                }
+                if (qvt.CSSstorage.clickWidth <= 2) {
+                    document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = 2
+                }
+            }
+            document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity
+            document.getElementById('clickOpacity').onchange = function () {
+                qvt.CSSstorage.clickOpacity = parseFloat(document.getElementById('clickOpacity').value)
+                if (qvt.CSSstorage.clickOpacity >= 1) {
+                    document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 1
+                }
+                if (qvt.CSSstorage.clickOpacity <= 0) {
+                    document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 0
+                }
+            }
+        }
+
         var qvt = null
-        document.getElementById('Generate').onclick = function () {
+        function clickGenerate() {
             if (!qvt) {
-                qvt = new QVT().init()
+                qvt = new QVTS().init()
                 qvt.setInput(document.getElementById('circult').value)
                 qvt.getNodes()
                 qvt.getLines()
@@ -63,46 +95,47 @@ mz,mx,mcy2(k),mcy1</textarea>
                 qvt.getSVGFrame()
                 document.getElementById('main').innerHTML = qvt.SVGFrame
                 qvt.listen()
-                if (1) {
-                    document.getElementById('clickInfo').style.display = ''
-                    document.getElementById('clickColor').value = qvt.CSSstorage.clickColor
-                    document.getElementById('clickColor').onchange = function () {
-                        qvt.CSSstorage.clickColor = document.getElementById('clickColor').value
-                    }
-                    document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth
-                    document.getElementById('clickWidth').onchange = function () {
-                        qvt.CSSstorage.clickWidth = parseFloat(document.getElementById('clickWidth').value)
-                        if (qvt.CSSstorage.clickWidth >= qvt.backlineWidth) {
-                            document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = qvt.backlineWidth - 1
-                        }
-                        if (qvt.CSSstorage.clickWidth <= 2) {
-                            document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = 2
-                        }
-                    }
-                    document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity
-                    document.getElementById('clickOpacity').onchange = function () {
-                        qvt.CSSstorage.clickOpacity = parseFloat(document.getElementById('clickOpacity').value)
-                        if (qvt.CSSstorage.clickOpacity >= 1) {
-                            document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 1
-                        }
-                        if (qvt.CSSstorage.clickOpacity <= 0) {
-                            document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 0
-                        }
-                    }
-                }
+                bindingDOM(qvt)
             } else {
+                // qvt.clear()
+                // qvt.setInput(document.getElementById('circult').value)
+                // qvt.getNodes()
+                // qvt.getLines()
+                // qvt.getSVGContentString()
+                // qvt.getSVGFrame()
+                // document.getElementById('main').innerHTML = qvt.SVGFrame
+                // qvt.bindingSVGEvent()
+                // qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
                 qvt.clear()
+                var oldqvt = qvt
+                qvt = new QVTS().init()
                 qvt.setInput(document.getElementById('circult').value)
                 qvt.getNodes()
                 qvt.getLines()
                 qvt.getSVGContentString()
                 qvt.getSVGFrame()
                 document.getElementById('main').innerHTML = qvt.SVGFrame
+                qvt.CSSstorage = oldqvt.CSSstorage
+                qvt.clickCSS = oldqvt.clickCSS
+                qvt.clickCSS.qvt=qvt
+                qvt.dymanicCSS.push(qvt.clickCSS)
+                qvt.hoverCSS = oldqvt.hoverCSS
+                qvt.hoverCSS.qvt=qvt
+                qvt.dymanicCSS.push(qvt.hoverCSS)
                 qvt.bindingSVGEvent()
                 qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
+                bindingDOM(qvt)
             }
             document.getElementById('formatedGateArray').innerText = qvt.getFormatInput()
         }
+        function clickExport() {
+            qvt.getSVGFrame()
+            qvt.download()
+        }
+
+        document.getElementById('Generate').onclick = function () { QVTS = QVT; clickGenerate() }
+        document.getElementById('Generate3d').onclick = function () { QVTS = QVT3d; clickGenerate() }
+        document.getElementById('Export').onclick = clickExport 
     </script>
 </body>
 
