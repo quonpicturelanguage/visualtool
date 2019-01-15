@@ -141,6 +141,13 @@ CircuitNode3d.prototype.constructor = CircuitNode3d;
 
 CircuitNode3d.prototype.projector = QounProjectorObject
 
+CircuitNode3d.prototype.LineArgument = {
+    parallelPositive: 0.35,
+    parallelNegativeNormal: 0.15,
+    parallelNegativeSmall: 0.1,
+    parallelNegativeBig: 0.1,
+}
+
 /**
  * calculation a n-d position
  * @param {Number} deep 
@@ -184,7 +191,7 @@ PictureLine3d.prototype.projector = QounProjectorObject
  * @param {Number[]} position 
  */
 PictureLine3d.prototype.calculateSVGPosition = function (position) {
-    return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,0.3;,1,0.8')).filter((v, i) => i <= 1)
+    return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,-0.3;,1,0.8')).filter((v, i) => i <= 1)
 }
 
 PictureLine3d.prototype.renderOrder = function () {

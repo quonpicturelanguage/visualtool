@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Demo</title>
+</head>
+
+<body>
+    <!-- 
+
+JSON.stringify(qvt.clickCSS.circuitLine)
+// qvt.clickCSS.circuitLine=
+
+{
+    "1": null,
+    "2": {
+        "color": "#0000ff",
+        "width": 4,
+        "opacity": 1
+    },
+    "3": {
+        "color": "#7b1dc0",
+        "width": 4,
+        "opacity": 1
+    },
+    "4": {
+        "color": "#ccae06",
+        "width": 4,
+        "opacity": 1
+    },
+    "5": {
+        "color": "#b92fb9",
+        "width": 4,
+        "opacity": 1
+    },
+    "6": {
+        "color": "#df00c4",
+        "width": 4,
+        "opacity": 1
+    },
+    "7": {
+        "color": "#24a7b9",
+        "width": 4,
+        "opacity": 1
+    },
+    "8": null,
+    "9": {
+        "color": "#4242c6",
+        "width": 4,
+        "opacity": 1
+    },
+    "10": {
+        "color": "#289d2c",
+        "width": 4,
+        "opacity": 1
+    },
+    "11": {
+        "color": "#8a8a8a",
+        "width": 4,
+        "opacity": 1
+    }
+}
+
+    -->
+    <div>
+        <br>
+        <textarea name="circult" id="circult" cols="30" rows="16" spellcheck="false" style="float:left">
+sx ,e,sz,e,sy,e
+,z,,y,x,
+cz1,cz2,cz3,cz4,cz5,cz6
+z1,cz1_1,cz2,cz3_1,cz4,x1
+h  ,mx ,h1  ,,h1,h  
+cz1_1,,cz2,,y1,   
+   ,sx,my,cz1,cz2,   
+i,cz1 ,,cz2,s1,s
+cz1,cz2,sx,,cz3_1,cz4
+,s ,cz1,cz2,,
+,,,x1,y ,
+e,mx ,e,my,e,mz
+</textarea>
+        <pre id='formatedGateArray' style="float:left;margin-left:2em;font-family:monospace;"></pre>
+        <br style="clear:both">
+        <input type="button" id='Generate' value="Generate">
+        <input type="button" id='Generate3d' value="Generate 3d">
+        <span id=clickInfo style="display:none">
+            <input type="button" id='Export' value="Export">
+            <br>
+            <span>SVG size:</span>
+            <input id='SVGSizeInput' type="range" min="0" max="105" step="1" value="100" style="vertical-align: middle">
+            <br>
+            <span>Click ~</span>
+            <span> color: </span>
+            <input type="color" id="clickColor" style="width:3em">
+            <span> width: </span>
+            <input type="text" id="clickWidth" style="width:3em">
+            <span> opacity: </span>
+            <input type="text" id="clickOpacity" style="width:3em">
+        </span>
+        <div id='main' style="width:100%"></div>
+    </div>
+    <script src="./src/main.js"></script>
+    <script src="./src/qvt3d.js"></script>
+    <script>
+        var QVT = exports.QVT
+        var QVT3d = exports.QVT3d
+        var QVTS = QVT
+
+        let SVGSizeInput = document.getElementById('SVGSizeInput')
+        if (SVGSizeInput) SVGSizeInput.oninput = function () {
+            let delta = (~~SVGSizeInput.value);
+            let big = { '101': 120, '102': 150, '103': 200, '104': 300, '105': 500 }[delta]
+            document.getElementById('main').style.width = (big ? big : delta) + '%'
+        }
+
+        function bindingDOM(qvt) {
+            document.getElementById('clickInfo').style.display = ''
+            document.getElementById('clickColor').value = qvt.CSSstorage.clickColor
+            document.getElementById('clickColor').onchange = function () {
+                qvt.CSSstorage.clickColor = document.getElementById('clickColor').value
+            }
+            document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth
+            document.getElementById('clickWidth').onchange = function () {
+                qvt.CSSstorage.clickWidth = parseFloat(document.getElementById('clickWidth').value)
+                if (qvt.CSSstorage.clickWidth >= qvt.backlineWidth) {
+                    document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = qvt.backlineWidth - 1
+                }
+                if (qvt.CSSstorage.clickWidth <= 2) {
+                    document.getElementById('clickWidth').value = qvt.CSSstorage.clickWidth = 2
+                }
+            }
+            document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity
+            document.getElementById('clickOpacity').onchange = function () {
+                qvt.CSSstorage.clickOpacity = parseFloat(document.getElementById('clickOpacity').value)
+                if (qvt.CSSstorage.clickOpacity >= 1) {
+                    document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 1
+                }
+                if (qvt.CSSstorage.clickOpacity <= 0) {
+                    document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 0
+                }
+            }
+        }
+
+        var qvt = null
+        function clickGenerate() {
+            if (!qvt) {
+                qvt = new QVTS().init()
+                qvt.setInput(document.getElementById('circult').value)
+                qvt.getNodes()
+                qvt.getLines()
+                qvt.getSVGContentString()
+                qvt.getSVGFrame()
+                document.getElementById('main').innerHTML = qvt.SVGFrame
+                qvt.listen()
+                bindingDOM(qvt)
+            } else {
+                // qvt.clear()
+                // qvt.setInput(document.getElementById('circult').value)
+                // qvt.getNodes()
+                // qvt.getLines()
+                // qvt.getSVGContentString()
+                // qvt.getSVGFrame()
+                // document.getElementById('main').innerHTML = qvt.SVGFrame
+                // qvt.bindingSVGEvent()
+                // qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
+                qvt.clear()
+                var oldqvt = qvt
+                qvt = new QVTS().init()
+                qvt.setInput(document.getElementById('circult').value)
+                qvt.getNodes()
+                qvt.getLines()
+                qvt.getSVGContentString()
+                qvt.getSVGFrame()
+                document.getElementById('main').innerHTML = qvt.SVGFrame
+                qvt.CSSstorage = oldqvt.CSSstorage
+                qvt.clickCSS = oldqvt.clickCSS
+                qvt.clickCSS.qvt=qvt
+                qvt.dymanicCSS.push(qvt.clickCSS)
+                qvt.hoverCSS = oldqvt.hoverCSS
+                qvt.hoverCSS.qvt=qvt
+                qvt.dymanicCSS.push(qvt.hoverCSS)
+                qvt.bindingSVGEvent()
+                qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
+                bindingDOM(qvt)
+            }
+            document.getElementById('formatedGateArray').innerText = qvt.getFormatInput()
+        }
+        function clickExport() {
+            qvt.getSVGFrame()
+            qvt.download()
+        }
+
+        document.getElementById('Generate').onclick = function () { QVTS = QVT; clickGenerate() }
+        document.getElementById('Generate3d').onclick = function () { QVTS = QVT3d; clickGenerate() }
+        document.getElementById('Export').onclick = clickExport 
+
+        function abcdef(){
+            document.getElementById('Generate3d').onclick()
+            qvt.clickCSS.circuitLine=
+
+{
+    "1": null,
+    "2": {
+        "color": "#0000ff",
+        "width": 4,
+        "opacity": 1
+    },
+    "3": {
+        "color": "#7b1dc0",
+        "width": 4,
+        "opacity": 1
+    },
+    "4": {
+        "color": "#ccae06",
+        "width": 4,
+        "opacity": 1
+    },
+    "5": {
+        "color": "#b92fb9",
+        "width": 4,
+        "opacity": 1
+    },
+    "6": {
+        "color": "#df00c4",
+        "width": 4,
+        "opacity": 1
+    },
+    "7": {
+        "color": "#24a7b9",
+        "width": 4,
+        "opacity": 1
+    },
+    "8": null,
+    "9": {
+        "color": "#4242c6",
+        "width": 4,
+        "opacity": 1
+    },
+    "10": {
+        "color": "#289d2c",
+        "width": 4,
+        "opacity": 1
+    },
+    "11": {
+        "color": "#8a8a8a",
+        "width": 4,
+        "opacity": 1
+    }
+}
+        }
+        abcdef()
+    </script>
+</body>
+
+</html>

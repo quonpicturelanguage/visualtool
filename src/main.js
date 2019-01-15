@@ -730,7 +730,7 @@ QVT.prototype.renderDymanicCSS = function (addCSSimportant) {
 }
 
 QVT.prototype.download = function (filename) {
-    this.util.createAndDownloadFile(this.SVGFrame,filename||'export.svg','svg')
+    this.util.createAndDownloadFile(this.SVGFrame, filename || 'export.svg', 'svg')
 }
 
 /**
@@ -840,6 +840,13 @@ CircuitNode.prototype.getMap = function (type, realIndex) {
     return info
 }
 
+CircuitNode.prototype.LineArgument = {
+    parallelPositive: 0.35,
+    parallelNegativeNormal: 0.15,
+    parallelNegativeSmall: 0.1,
+    parallelNegativeBig: 0.2,
+}
+
 /**
  * 
  * @param {String} nodestr 
@@ -853,8 +860,8 @@ CircuitNode.prototype.initial = function (nodestr) {
         '0': [2, 1],
         '1': [1, 2]
     }[rotationType]
-    let a = 0.1
-    let b = 0.2
+    let a = this.LineArgument.parallelNegativeSmall
+    let b = this.LineArgument.parallelNegativeBig
     let s = 's'
     let t = 't'
     let linkArray = {
@@ -862,7 +869,6 @@ CircuitNode.prototype.initial = function (nodestr) {
         sx: [[5, 8, b, zIndex[0]], [6, 7, a, zIndex[1]]],
         sy: [[5, 7, a, zIndex[0]], [6, 8, a, zIndex[1]]],
     }[this.type]
-    let args = [0.3, 0.2]
 
     linkArray.forEach(v => {
         this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, this.util.pp(v[1])], [s, this.util.pp(v[0])]] })
@@ -885,8 +891,8 @@ CircuitNode.prototype.measure = function (nodestr) {
         '0': [2, 1],
         '1': [1, 2]
     }[rotationType]
-    let a = 0.1
-    let b = 0.2
+    let a = this.LineArgument.parallelNegativeSmall
+    let b = this.LineArgument.parallelNegativeBig
     let s = 's'
     let t = 't'
     let linkArray = {
@@ -894,7 +900,6 @@ CircuitNode.prototype.measure = function (nodestr) {
         mx: [[1, 4, b, zIndex[1], ''], [2, 3, a, zIndex[0], '-']],
         my: [[1, 3, a, zIndex[0], ''], [2, 4, a, zIndex[1], '-']],
     }[this.type]
-    let args = [0.3, 0.2]
 
     linkArray.forEach(v => {
         this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelNegative', [v[2]], v[3]], line: 1, points: [[s, v[0]], [s, v[1]], [s, this.util.pp(v[1])], [s, this.util.pp(v[0])]], mark: markContent ? this.util.combineSignAndMarkContent(v[4], markContent) : null })
@@ -942,7 +947,7 @@ CircuitNode.prototype.single = function (nodestr) {
             '0': [4, 3, 2, 1],
             '1': [1, 2, 3, 4],
         }[coverType]
-        let a = 0.35
+        let a = this.LineArgument.parallelPositive
         let s = 's'
         linkArray.forEach((v, i) => {
             // link lines
@@ -955,7 +960,7 @@ CircuitNode.prototype.single = function (nodestr) {
         let rotationType = (v => ~~(v !== 0))(match[1])
         let markContent = (v => [{ 's': null, 'sd': null, 't': '45', 'td': '-45' }[v]][0])(this.type)
         let coverType = (v => ~~(v === 'sd'))(this.type)
-        let a = 0.35
+        let a = this.LineArgument.parallelPositive
         let s = 's'
         let linkArray = {
             '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
@@ -983,7 +988,7 @@ CircuitNode.prototype.single = function (nodestr) {
             '0': [[1, 6], [2, 5], [3, 7], [4, 8]],
             '1': [[1, 5], [2, 6], [3, 8], [4, 7]],
         }[rotationType]
-        let a = 0.35
+        let a = this.LineArgument.parallelPositive
         let s = 's'
         let zIndex = {
             '0': [4, 3, 2, 1],
@@ -1039,8 +1044,8 @@ CircuitNode.prototype.control = function (nodestr, nodestr2, bit2Index, isContro
 
         let s = 's'
         let t = 't'
-        let a = 0.15
-        let b = 0.35
+        let a = this.LineArgument.parallelNegativeNormal
+        let b = this.LineArgument.parallelPositive
         // 3,4 7,8 -> 1',5' 2',6'
         linkArray = [
             [3, 1, 'parallelNegative', [a], [[s, 3], [t, 1], [t, 5], [s, 7]]],
