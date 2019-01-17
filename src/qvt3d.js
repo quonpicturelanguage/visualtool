@@ -75,7 +75,7 @@ QuonProjector.prototype.outerProduct = function (a2) {
 /**
  * demo: [3,4,0].map(QuonProjector.prototype.scale0())[0]
  */
-QuonProjector.prototype.scale0 = function(){
+QuonProjector.prototype.scale0 = function () {
     return (v, i, a) => i === 0 ? Math.sqrt(a.slice(0, 3).map(v => v * v).reduce((a, b) => a + b)) : null
 }
 
@@ -99,7 +99,7 @@ QuonProjector.prototype.normalize0 = function () {
  */
 QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
     let u, v, w
-    [u, v, w] = v3.map(this.normalize0())[0].slice(0,3)
+    [u, v, w] = v3.map(this.normalize0())[0].slice(0, 3)
     return [
         [u * u + (1 - u * u) * c, u * v * (1 - c) - w * s, u * w * (1 - c) + v * s, 0],
         [u * v * (1 - c) + w * s, v * v + (1 - v * v) * c, v * w * (1 - c) - u * s, 0],
@@ -109,7 +109,27 @@ QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
 }
 
 
+QuonProjector.prototype.buildViewMap = function (theta, phi, rho) {
+    phi=180-phi // I build left hand axis by mistake, so I fix by this way
+    var v0 = [Math.sin(theta * Math.PI / 180) * Math.sin(phi * Math.PI / 180), Math.cos(theta * Math.PI / 180), Math.sin(theta * Math.PI / 180) * Math.cos(phi * Math.PI / 180)]
+    var x0 = v0.map(this.outerProduct([0, 1, 0])).map(this.normalize0())[0]
+    var y0 = x0.map(this.outerProduct(v0)).map(this.normalize0())[0]
+    var rotate = [
+        [Math.cos(rho * Math.PI / 180), Math.sin(rho * Math.PI / 180), 0, 0],
+        [-Math.sin(rho * Math.PI / 180), Math.cos(rho * Math.PI / 180), 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ]
+
+    var zmap0 = (v, i, a) => i === 0 ? -a.map(this.innerProduct0(v0))[0] : null
+    var xymap0 = (v, i, a) => i === 0 ? [a.map(this.innerProduct0(x0))[0], a.map(this.innerProduct0(y0))[0]].map(this.applyMatrix4(rotate)) : null
+
+    this.zmap0 = zmap0
+    this.xymap0 = xymap0
+}
+
 let QounProjectorObject = new QuonProjector().init()
+QounProjectorObject.buildViewMap(70, -15, 0)
 
 let QVTfromMain = QVT
 
@@ -122,6 +142,7 @@ QVT3d.prototype.constructor = QVT3d;
 
 QVT3d.prototype.getSVGViewBox = function (gateArray) {
     let boxSize = new this.PictureLine().calculateSVGPosition([gateArray[0].length + 0.2, gateArray.length + 2])
+    return `-1000 -1000 2000 2000`
     return `0 0 ${boxSize[0]} ${boxSize[1]}`
 }
 
@@ -191,11 +212,13 @@ PictureLine3d.prototype.projector = QounProjectorObject
  * @param {Number[]} position 
  */
 PictureLine3d.prototype.calculateSVGPosition = function (position) {
-    return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,-0.3;,1,0.8')).filter((v, i) => i <= 1)
+    // return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,-0.3;,1,0.8')).filter((v, i) => i <= 1)
+    return position.map(v => 100 * v).map(this.projector.xymap0)[0]
 }
 
 PictureLine3d.prototype.renderOrder = function () {
-    return 100 + this.zIndex * 0.001 + this.combine(this.Charge[this.type](this.args)).map(this.projector.applyMatrix4('0,-0.7,0.71'))[0]
+    // return 100 + this.zIndex * 0.001 + this.combine(this.Charge[this.type](this.args)).map(this.projector.applyMatrix4('0,-0.7,0.71'))[0]
+    return 100 + this.zIndex * 0.001 + this.combine(this.Charge[this.type](this.args)).map(this.projector.zmap0)[0]
 }
 
 

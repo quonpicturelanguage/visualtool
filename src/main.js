@@ -279,6 +279,7 @@ QVT.prototype.clear = function () {
     }
     if (this.cssnode) {
         this.cssnode.innerHTML = ''
+        this.cssnode.parentNode.removeChild(this.cssnode)
     }
 }
 
