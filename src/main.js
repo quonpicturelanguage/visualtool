@@ -260,6 +260,12 @@ QVT.prototype.init = function () {
     this.stage = ''
     this.stageInfo = {}
     this.dymanicCSS = []
+    this.CSSstorage = {
+        clickColor: '#0000ff',
+        clickWidth: this.frontlineWidth,
+        clickOpacity: 1,
+        hideBackline: false
+    }
     return this
 }
 
@@ -674,12 +680,6 @@ QVT.prototype.listen = function () {
 }
 
 QVT.prototype.buildDymanicCSSObject = function () {
-    this.CSSstorage = {
-        clickColor: '#0000ff',
-        clickWidth: this.frontlineWidth,
-        clickOpacity: 1
-    }
-
     //In this order, hoverCSS will cover clickCSS for one circultLine if they both have settings
     this.clickCSS = new CSSObject().init(this)
     this.dymanicCSS.push(this.clickCSS)
@@ -723,7 +723,7 @@ QVT.prototype.bindingSVGEvent = function () {
 }
 
 QVT.prototype.renderDymanicCSS = function (addCSSimportant) {
-    let dymanicCSSContent = []
+    let dymanicCSSContent = [this.CSSstorage.hideBackline?'path.backline {display: none;}\n':'']
     this.dymanicCSS.forEach(v => {
         dymanicCSSContent.push(v.render(addCSSimportant))
     })
@@ -733,6 +733,12 @@ QVT.prototype.renderDymanicCSS = function (addCSSimportant) {
 QVT.prototype.download = function (filename) {
     this.util.createAndDownloadFile(this.SVGFrame, filename || 'export.svg', 'svg')
 }
+
+
+
+
+
+
 
 /**
  * @constructor

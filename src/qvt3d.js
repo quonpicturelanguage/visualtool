@@ -110,7 +110,7 @@ QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
 
 
 QuonProjector.prototype.buildViewMap = function (theta, phi, rho) {
-    phi=180-phi // I build left hand axis by mistake, so I fix by this way
+    phi = 180 - phi // I build left hand axis by mistake, so I fix by this way
     var v0 = [Math.sin(theta * Math.PI / 180) * Math.sin(phi * Math.PI / 180), Math.cos(theta * Math.PI / 180), Math.sin(theta * Math.PI / 180) * Math.cos(phi * Math.PI / 180)]
     var x0 = v0.map(this.outerProduct([0, 1, 0])).map(this.normalize0())[0]
     var y0 = x0.map(this.outerProduct(v0)).map(this.normalize0())[0]
@@ -129,7 +129,7 @@ QuonProjector.prototype.buildViewMap = function (theta, phi, rho) {
 }
 
 let QounProjectorObject = new QuonProjector().init()
-QounProjectorObject.buildViewMap(70, -15, 0)
+QounProjectorObject.buildViewMap(70, 20, 0)
 
 let QVTfromMain = QVT
 
@@ -140,10 +140,31 @@ function QVT3d() {
 QVT3d.prototype = Object.create(QVTfromMain.prototype);
 QVT3d.prototype.constructor = QVT3d;
 
+QVT3d.prototype.projector = QounProjectorObject
+
 QVT3d.prototype.getSVGViewBox = function (gateArray) {
-    let boxSize = new this.PictureLine().calculateSVGPosition([gateArray[0].length + 0.2, gateArray.length + 2])
+    let getp = v=>new this.CircuitNode().calculatePosition(v)
+    let getrp = v=>new this.PictureLine().calculateSVGPosition(v)
+    let info = {
+        minX:Infinity,
+        maxX:-Infinity,
+        minY:Infinity,
+        maxY:-Infinity,
+    }
+    Array.from({length:gateArray[0].length+2}).forEach((_,bitIndex) => {
+        [0,gateArray.length].forEach(deep=>{
+            [1,2,3,4].forEach(positionIndex=>{
+                let x,y;
+                [x,y]=new this.PictureLine().calculateSVGPosition(new this.CircuitNode().calculatePosition(deep,bitIndex-1,positionIndex))
+                info.minX=Math.min(info.minX,x)
+                info.maxX=Math.max(info.maxX,x)
+                info.minY=Math.min(info.minY,y)
+                info.maxY=Math.max(info.maxY,y)
+            })
+        })
+    });
+    return `${info.minX} ${info.minY} ${info.maxX-info.minX} ${info.maxY-info.minY}`
     return `-1000 -1000 2000 2000`
-    return `0 0 ${boxSize[0]} ${boxSize[1]}`
 }
 
 QVT3d.prototype.backlineWidth = QVT3d.prototype.frontlineWidth + 2
