@@ -109,7 +109,7 @@ QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
     ]
 }
 
-QuonProjector.prototype.buildMatrix4ConvertingPVToPV0 = function (p1, p2, v1, v2, theta) {
+QuonProjector.prototype.convertingPVToPV0 = function (p1, p2, v1, v2, theta) {
     let m1 = [
         [1, 0, 0, -p1[0]],
         [0, 1, 0, -p1[1]],
