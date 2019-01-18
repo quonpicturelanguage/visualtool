@@ -6,7 +6,9 @@ if (isNodejs) {
     var qvtMain = exports
 }
 var QVT = qvtMain.QVT
-var QVT = qvtMain.QVT3d
+var QVT3d = qvtMain.QVT3d
+
+QVT=QVT3d
 
 let massertResult = [0, 0, []]
 function massert(fun) {
@@ -48,6 +50,28 @@ pl.sourcePosition = [[2, 1, 1], [0, 1, 0], [0, 0, 1]]
 massert(() => [pl.combine([0.5, 0.2, 0.3]), [1, 0.7, 0.8]])
 
 ////////////////////////
+
+QVT3d.prototype.CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
+    let position = [bitIndex + 0.4, deep + 1, 0]
+    switch (positionIndex) {
+        case 1:
+            break;
+        case 2:
+            position[2] += 0.2
+            break;
+        case 3:
+            position[0] += 0.2
+            position[2] += 0.2
+            break;
+        case 4:
+            position[0] += 0.2
+            break;
+    }
+    if(bitIndex===1){
+        return position.map(this.projector.buildMatrix4ConvertingPVToPV0([1.4,1,0],[1.4,1,0],[0,1,0],[50,100,50]))[0]
+    }
+    return position;
+}
 
 let qvt = new QVT().init()
 

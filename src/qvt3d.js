@@ -83,9 +83,10 @@ QuonProjector.prototype.scale0 = function () {
  * demo: [3,4,0].map(QuonProjector.prototype.normalize0())[0]
  */
 QuonProjector.prototype.normalize0 = function () {
+    let self = this
     return (v, i, a) => {
         if (i !== 0) return null;
-        let scale = a.map(this.scale0())[0]
+        let scale = a.map(self.scale0())[0]
         if (scale < 0.000000001) return a.map((v, i) => i === 3 ? 1 : 0);
         return a.map((v, i) => i === 3 ? 1 : v / scale);
     }
@@ -108,6 +109,29 @@ QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
     ]
 }
 
+QuonProjector.prototype.buildMatrix4ConvertingPVToPV0 = function (p1, p2, v1, v2, theta) {
+    let m1 = [
+        [1, 0, 0, -p1[0]],
+        [0, 1, 0, -p1[1]],
+        [0, 0, 1, -p1[2]],
+        [0, 0, 0, 1],
+    ]
+    v1 = v1.map(this.normalize0())[0]
+    v2 = v2.map(this.normalize0())[0]
+    let v = v1.map(this.outerProduct(v2))
+    let s = v.map(this.scale0())[0]
+    let c = v1.map(this.innerProduct0(v2))[0]
+    let m2 = this.buildRotateMatrix4(v, c, s)
+    let m21 = this.buildRotateMatrix4(v2, Math.cos(-(theta || 0) / 180 * Math.PI), Math.sin(-(theta || 0) / 180 * Math.PI))
+    let m3 = [
+        [1, 0, 0, p2[0]],
+        [0, 1, 0, p2[1]],
+        [0, 0, 1, p2[2]],
+        [0, 0, 0, 1],
+    ]
+    let self = this
+    return (v, i, a) => i === 0 ? a.map(self.array3to40(1))[0].map(self.applyMatrix4(m1)).map(self.applyMatrix4(m2)).map(self.applyMatrix4(m21)).map(self.applyMatrix4(m3)).map(self.array4to30())[0] : null
+}
 
 QuonProjector.prototype.buildViewMap = function (theta, phi, rho) {
     phi = 180 - phi // I build left hand axis by mistake, so I fix by this way
@@ -129,7 +153,7 @@ QuonProjector.prototype.buildViewMap = function (theta, phi, rho) {
 }
 
 let QounProjectorObject = new QuonProjector().init()
-QounProjectorObject.buildViewMap(70, 20, 0)
+QounProjectorObject.buildViewMap(54.4, 20, 0)
 
 let QVTfromMain = QVT
 
@@ -143,27 +167,27 @@ QVT3d.prototype.constructor = QVT3d;
 QVT3d.prototype.projector = QounProjectorObject
 
 QVT3d.prototype.getSVGViewBox = function (gateArray) {
-    let getp = v=>new this.CircuitNode().calculatePosition(v)
-    let getrp = v=>new this.PictureLine().calculateSVGPosition(v)
+    let getp = v => new this.CircuitNode().calculatePosition(v)
+    let getrp = v => new this.PictureLine().calculateSVGPosition(v)
     let info = {
-        minX:Infinity,
-        maxX:-Infinity,
-        minY:Infinity,
-        maxY:-Infinity,
+        minX: Infinity,
+        maxX: -Infinity,
+        minY: Infinity,
+        maxY: -Infinity,
     }
-    Array.from({length:gateArray[0].length+2}).forEach((_,bitIndex) => {
-        [0,gateArray.length].forEach(deep=>{
-            [1,2,3,4].forEach(positionIndex=>{
-                let x,y;
-                [x,y]=new this.PictureLine().calculateSVGPosition(new this.CircuitNode().calculatePosition(deep,bitIndex-1,positionIndex))
-                info.minX=Math.min(info.minX,x)
-                info.maxX=Math.max(info.maxX,x)
-                info.minY=Math.min(info.minY,y)
-                info.maxY=Math.max(info.maxY,y)
+    Array.from({ length: gateArray[0].length + 2 }).forEach((_, bitIndex) => {
+        [0, gateArray.length].forEach(deep => {
+            [1, 2, 3, 4].forEach(positionIndex => {
+                let x, y;
+                [x, y] = new this.PictureLine().calculateSVGPosition(new this.CircuitNode().calculatePosition(deep, bitIndex - 1, positionIndex))
+                info.minX = Math.min(info.minX, x)
+                info.maxX = Math.max(info.maxX, x)
+                info.minY = Math.min(info.minY, y)
+                info.maxY = Math.max(info.maxY, y)
             })
         })
     });
-    return `${info.minX} ${info.minY} ${info.maxX-info.minX} ${info.maxY-info.minY}`
+    return `${info.minX} ${info.minY} ${info.maxX - info.minX} ${info.maxY - info.minY}`
     return `-1000 -1000 2000 2000`
 }
 

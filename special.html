@@ -57,6 +57,37 @@ mz,mx,mcy2(k),mcy1</textarea>
         var QVT3d = exports.QVT3d
         var QVTS = QVT3d
 
+        QVT3d.prototype.CircuitNode.prototype.calculatePosition = function (deep, bitIndex, positionIndex) {
+            let position = [bitIndex + 0.4, deep + 1, 0]
+            switch (positionIndex) {
+                case 1:
+                    break;
+                case 2:
+                    position[2] += 0.2
+                    break;
+                case 3:
+                    position[0] += 0.2
+                    position[2] += 0.2
+                    break;
+                case 4:
+                    position[0] += 0.2
+                    break;
+            }
+            if (bitIndex === 0) {
+                return position.map(this.projector.buildMatrix4ConvertingPVToPV0([0.5, 1, 0.1], [1, 0, 0], [0, 1, 0], [1, 3, 0], 90))[0]
+            }
+            if (bitIndex === 1) {
+                return position.map(this.projector.buildMatrix4ConvertingPVToPV0([1.5, 1, 0.1], [0, 0, 1], [0, 1, 0], [0, 3, 1], 180))[0]
+            }
+            if (bitIndex === 2) {
+                return position.map(this.projector.buildMatrix4ConvertingPVToPV0([2.5, 1, 0.1], [-1, 0, 0], [0, 1, 0], [-1, 3, 0], -90))[0]
+            }
+            if (bitIndex === 3) {
+                return position.map(this.projector.buildMatrix4ConvertingPVToPV0([3.5, 1, 0.1], [0, 0, -1], [0, 1, 0], [0, 3, -1], 0))[0]
+            }
+            return position;
+        }
+
         let SVGSizeInput = document.getElementById('SVGSizeInput')
 
         SVGSizeInput.oninput = function () {
