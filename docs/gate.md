@@ -24,9 +24,9 @@
 'run';
 output = [];
 [
-    ['Initiation $\\left|0\\right>$ in $Z$-basis','sz'],
-    ['Initiation $\\left|0\\right>$ in $X$-basis','sx'],
-    ['Initiation $\\left|0\\right>$ in $Y$-basis','sy'],
+    ['Initiating $\\left|0\\right>$ in $Z$-basis','sz'],
+    ['Initiating $\\left|0\\right>$ in $X$-basis','sx'],
+    ['Initiating $\\left|0\\right>$ in $Y$-basis','sy'],
     ['','sy1'],
 
     ['Measurement in $Z$-basis','mz'],
