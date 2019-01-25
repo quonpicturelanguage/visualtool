@@ -1,37 +1,40 @@
 # gate list
 
->! unfinished
+代表门的字符后直接跟参数, 参数间用`_`分隔
 
-test
+涉及两个bit的门, 第一个参数用来分组, 奇数和这个奇数+1是一组
 
-Pauli $Z$
 
-`qvtg.table(['a','thead'],[[1,2],[3,'test: render table'],['5<br>5-2',6]])`
 
-```js
-'run';
-return qvtg.table(['a','thead'],[[1,2],[3,'test: render table'],['5<br>5-2',6]])
-```
-<p>1+1</p>
+所有的门见下表, 其中Conditional-Gate的第一个bit必须已经被测量过作为经典状态, 所以示例中都先作用Measurement in $Z$-basis
 
-<hr>
+不提供CNOT, 利用 $CNOT = I \otimes H\cdot CZ\cdot I \otimes H$ 来画
+
+表格中还有两个特殊标记`e`和`die`
+
+`e`用来让当前的位置线不画出来
+
+`die`用来让一个bit被视为经典状态(之后的线都不画出来, 只能接Initiating)
+
+
+
 
 
 ```js
 'run';
 output = [];
 [
-    ['Start with $Z$-basis','sz'],
-    ['Start with $X$-basis','sx'],
-    ['Start with $Y$-basis','sy'],
+    ['Initiation $\\left|0\\right>$ in $Z$-basis','sz'],
+    ['Initiation $\\left|0\\right>$ in $X$-basis','sx'],
+    ['Initiation $\\left|0\\right>$ in $Y$-basis','sy'],
     ['','sy1'],
 
-    ['Measure with $Z$-basis','mz'],
-    ['Measure with $X$-basis','mx'],
-    ['Measure with $Y$-basis','my'],
+    ['Measurement in $Z$-basis','mz'],
+    ['Measurement in $X$-basis','mx'],
+    ['Measurement in $Y$-basis','my'],
     ['','my1'],
 
-    ['Idle',''],
+    ['Identity',''],
     ['','i'],
     ['Pauli $Z$','z'],
     ['','z1'],
@@ -45,27 +48,31 @@ output = [];
     ['','h2'],
     ['','h3'],
 
-    ['s','s'],
+    ['$\\frac \\pi 4$ Phase Gate','s'],
     ['','s1'],
-    ['sd','sd'],
+    ['$-\\frac \\pi 4$ Phase Gate','sd'],
     ['','sd1'],
-    ['t','t'],
-    ['td','td'],
+    ['$\\frac \\pi 8$ Phase Gate','t'],
+    ['$-\\frac \\pi 8$ Phase Gate','td'],
 
-    ['rz','rz15'],
+    ['Phase Gate','rz15'],
     ['','rz15_1'],
-    ['rx','rx-45'],
-    ['','rx45_1'],
+    ['Rotating Gate','rx-60'],
+    ['','rx60_1'],
 
-    ['cz','cz5,cz6'],
+    ['Controlled-$Z$','cz5,cz6'],
     ['','cz5_1,cz6'],
 
-    ['mcz','mz(i),<br>mcz5,mcz6(i)'],
-    ['mcx','mz(j),<br>mcx5,mcx6(j)'],
-    ['mcy','mz(-k),<br>mcy5,mcy6(-k)'],
+    ['Conditional-$Z$','mz(i),<br>mcz1,mcz2(i)'],
+    ['Conditional-$X$','mz(j),<br>mcx5,mcx6(j)'],
+    ['Conditional-$Y$','mz(-k),<br>mcy5,mcy6(-k)'],
+
+    ['Speical Mark `e`','x,x<br>,e<br>y,y'],
+    ['Speical Mark `die`',',die<br>,<br>sx,sx'],
+    
     
 ].forEach(v => output.push([v[0],v[1], qvtg.getQVT2dDomText(v[1]), qvtg.getQVT3dDomText(v[1])]))
-return qvtg.table(['gate','code', '2d','3d'], output,{class:['gatelistTable34']})
+return qvtg.table(['gate','code', '2d','3d'], output,{class:['gatelistTable34']});
 ```
 
 
