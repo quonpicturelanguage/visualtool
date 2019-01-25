@@ -2,5 +2,4 @@
 
 <!-- √ × -->
 
-+ Nothing here now
-  - N/A ×
++ [gatelist](gate.md)

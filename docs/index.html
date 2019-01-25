@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>UV visit</title>
+  <title>Quon Visual Tool</title>
   <!-- <link rel="shortcut icon" type="image/png" href="./img/ab2.png"> -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="Description">
@@ -49,6 +49,11 @@
           let renderCheckbox=function(str){
             return str.replace(/√/g,'<input type="checkbox" disabled checked style="margin:0 0 0.1em 0.45em;vertical-align: middle;">').replace(/×/g,'<input type="checkbox" disabled style="margin:0 0 0.1em 0.45em;vertical-align: middle;">')
           }
+          let renderScriptNode=function(str){
+            return str.replace(/```.*?\r?\n['"]run['"];[^]*?\r?\n```/g,function(x){
+              return eval(`(function(){${x.replace(/```.*?\r?\n['"]run['"];/,'').slice(0,-3)}})()`)
+            })
+          }
           let replaceFunction = function(all, code){
             const startsWith = all.startsWith('$$')
             const endsWith = all.endsWith('$$')
@@ -61,19 +66,24 @@
               return all
             }
           }
-          let convertNode=function(x){
+          let convertMathNode=function(x){
             x.innerHTML = renderCheckbox(x.innerHTML.replace(/\$\$?([\s\S]*?)\$\$?/g, replaceFunction))
           }
           hook.beforeEach(function(content){
-            return renderCheckbox(content.replace(/\$\$([\s\S]*?)\$\$/g, replaceFunction).replace(/\$(.*?)\$/g, replaceFunction))
+            return renderScriptNode(
+              renderCheckbox(
+                content
+              )
+            ).replace(/\$\$([\s\S]*?)\$\$/g, replaceFunction)
+            .replace(/\$(.*?)\$/g, replaceFunction)
           })
           // hook.afterEach(function(content){
-          //   const doc = new DOMParser().parseFromString(convertNode, 'text/html')
-          //   Array.from(doc.querySelectorAll('p')).forEach(convertNode)
+          //   const doc = new DOMParser().parseFromString(content, 'text/html')
+          //   Array.from(doc.querySelectorAll('.lang-js')).forEach(convertScriptNode)
           //   return doc.body.innerHTML
           // })
           hook.doneEach(function(){
-            Array.from(document.querySelectorAll('.sidebar li')).forEach(convertNode)
+            Array.from(document.querySelectorAll('.sidebar li')).forEach(convertMathNode)
           })
         }
       ]
