@@ -646,8 +646,8 @@ QVT.prototype.generateSVGFrame = function (SVGContentString, gateArray) {
 }
 
 QVT.prototype.getSVGViewBox = function (gateArray) {
-    let boxSize = new this.PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length + 2])
-    return `0 0 ${boxSize[0]} ${boxSize[1]}`
+    let boxSize = new this.PictureLine().calculateSVGPosition([gateArray[0].length, gateArray.length])
+    return `0 100 ${boxSize[0]} ${boxSize[1]}`
 }
 
 QVT.prototype.frontlineWidth = 4
@@ -983,7 +983,7 @@ CircuitNode.prototype.single = function (nodestr) {
         }[rotationType]
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark[i] ? markContent : null, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }
@@ -1021,7 +1021,7 @@ CircuitNode.prototype.single = function (nodestr) {
         }
         linkArray.forEach((v, i) => {
             // link lines
-            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark ? markContent : null, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
+            this.innernalLink[v[0]] = Object.assign(this.innernalLink[v[0]], { targetNode: this.SELF, targetIndex: v[1], draw: ['parallelPositive', [a], zIndex[i]], line: 1, mark: mark[i] ? markContent : null, points: [[s, v[0]], [s, this.util.pp(v[1])], [s, v[1]], [s, this.util.pp(v[0])]] })
         })
         // draw: [functionname:String,args:Array,zIndex:Number]
     }

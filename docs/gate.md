@@ -2,53 +2,45 @@
 
 >! unfinished
 
-```js
-'run';
-//define something here
-g=typeof g==='undefined'? {}:g
-g.getQVT2dDom=v=>' 9876487615684'
-g.getQVT3dDom=v=>' 9876487615684'
-g.table=function(ths,tdss){
-    return `<table><thead><tr>${ths.map(v=>`<th style="text-align:left">${v}</th>`).join('')}</tr></thead><tbody>${tdss.map(tds=>`<tr>${tds.map(v=>`<td style="text-align:left">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`
-}
-return ''
-```
-
 test
 
-`g.table(['a','thead'],[[1,2],[3,'test: render table'],['5<br>5-2',6]])`
+Pauli $Z$
+
+`qvtg.table(['a','thead'],[[1,2],[3,'test: render table'],['5<br>5-2',6]])`
 
 ```js
 'run';
-return g.table(['a','thead'],[[1,2],[3,'test: render table'],['5<br>5-2',6]])
+return qvtg.table(['a','thead'],[[1,2],[3,'test: render table'],['5<br>5-2',6]])
 ```
+<p>1+1</p>
 
----
+<hr>
+
 
 ```js
 'run';
 output = [];
 [
-    ['sz','sz'],
-    ['sx','sx'],
-    ['sy','sy'],
+    ['Start with $Z$-basis','sz'],
+    ['Start with $X$-basis','sx'],
+    ['Start with $Y$-basis','sy'],
     ['','sy1'],
 
-    ['mz','mz'],
-    ['mx','mx'],
-    ['my','my'],
+    ['Measure with $Z$-basis','mz'],
+    ['Measure with $X$-basis','mx'],
+    ['Measure with $Y$-basis','my'],
     ['','my1'],
 
-    ['i',''],
+    ['Idle',''],
     ['','i'],
-    ['z','z'],
+    ['Pauli $Z$','z'],
     ['','z1'],
-    ['x','x'],
+    ['Pauli $X$','x'],
     ['','x1'],
-    ['y','y'],
+    ['Pauli $Y$','y'],
     ['','y1'],
 
-    ['h','h'],
+    ['Hadamard','h'],
     ['','h1'],
     ['','h2'],
     ['','h3'],
@@ -62,18 +54,18 @@ output = [];
 
     ['rz','rz15'],
     ['','rz15_1'],
-    ['rx','rx45'],
+    ['rx','rx-45'],
     ['','rx45_1'],
 
     ['cz','cz5,cz6'],
     ['','cz5_1,cz6'],
 
-    ['mcz','mz,<br>mcz5,mcz6'],
-    ['mcx','mz,<br>mcx5,mcx6'],
-    ['mcy','mz,<br>mcy5,mcy6'],
+    ['mcz','mz(i),<br>mcz5,mcz6(i)'],
+    ['mcx','mz(j),<br>mcx5,mcx6(j)'],
+    ['mcy','mz(-k),<br>mcy5,mcy6(-k)'],
     
-].forEach(v => output.push([v[0],v[1], g.getQVT2dDom(v[1]), g.getQVT3dDom(v[1])]))
-return g.table(['gate','code', '2d','3d'], output)
+].forEach(v => output.push([v[0],v[1], qvtg.getQVT2dDomText(v[1]), qvtg.getQVT3dDomText(v[1])]))
+return qvtg.table(['gate','code', '2d','3d'], output,{class:['gatelistTable34']})
 ```
 
 

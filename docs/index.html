@@ -11,6 +11,55 @@
   <meta http-equiv="expires" content="0">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <link href="./vue.themes.docsify.4.5.5.css" rel="stylesheet">
+  <style>
+    .gatelistTable34 td:nth-child(3) svg {
+      width:120px;
+    }
+    .gatelistTable34 td:nth-child(4) svg {
+      width:240px;
+    }
+  </style>
+  <script src="../src/main.js"></script>
+  <script src="../src/qvt3d.js"></script>
+  <script>
+    (function(){
+      qvtg={replaceToken:{}}
+      qvtg.guid=function () {
+        return 'id_' + 'xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+      QVT = exports.QVT
+      QVT3d = exports.QVT3d
+      let buildDomText=function(QVTS,str){
+        qvt = new QVTS().init()
+        qvt.setInput(str)
+        qvt.getNodes()
+        qvt.getLines()
+        qvt.getSVGContentString()
+        qvt.getSVGFrame()
+        return qvt
+      }
+      let preProcess=function(str){
+        if(str==='')return 'i1';
+        return str.replace(/<br>/g,'\n')
+      }
+      qvtg.getQVT2dDomText=function(str){
+        let id=`<p>${qvtg.guid()}</p>`
+        qvtg.replaceToken[id]=buildDomText(QVT,preProcess(str)).SVGFrame.replace(/\s+/g,' ')
+        return id
+      }
+      qvtg.getQVT3dDomText=function(str){
+        let id=`<p>${qvtg.guid()}</p>`
+        qvtg.replaceToken[id]=buildDomText(QVT3d,preProcess(str)).SVGFrame.replace(/\s+/g,' ')
+        return id
+      }
+      qvtg.table=function(ths,tdss,args){
+        return `<table class="${((args||{}).class||[]).join(' ')}"><thead><tr>${ths.map(v=>`<th style="text-align:left">${v}</th>`).join('')}</tr></thead><tbody>${tdss.map(tds=>`<tr>${tds.map(v=>`<td style="text-align:left">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+      }
+    })()
+  </script>
 </head>
 <body>
   <div id="app"></div>
@@ -46,6 +95,7 @@
       formatUpdated: '{YYYY}-{MM}-{DD} {HH}:{mm}:{ss}',
       plugins: [
         function(hook){
+          katex = exports.katex
           let renderCheckbox=function(str){
             return str.replace(/√/g,'<input type="checkbox" disabled checked style="margin:0 0 0.1em 0.45em;vertical-align: middle;">').replace(/×/g,'<input type="checkbox" disabled style="margin:0 0 0.1em 0.45em;vertical-align: middle;">')
           }
@@ -79,11 +129,19 @@
           })
           // hook.afterEach(function(content){
           //   const doc = new DOMParser().parseFromString(content, 'text/html')
-          //   Array.from(doc.querySelectorAll('.lang-js')).forEach(convertScriptNode)
+          //   Array.from(doc.querySelectorAll('p')).forEach(convertNode)
           //   return doc.body.innerHTML
           // })
           hook.doneEach(function(){
+            let map=qvtg.replaceToken
+            let node=document.querySelector('.markdown-section')
+            let str=node.innerHTML
+            for(let id in map){
+              str=str.replace(id,map[id])
+            }
+            node.innerHTML=str
             Array.from(document.querySelectorAll('.sidebar li')).forEach(convertMathNode)
+            Array.from(document.querySelectorAll('.gatelistTable34 td:nth-child(1),.gatelistTable34 td:nth-child(2)')).forEach(convertMathNode)
           })
         }
       ]
