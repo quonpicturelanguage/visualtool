@@ -22,7 +22,7 @@
 
 ```js
 'run';
-output = [];
+let output = [];
 [
     ['Initiating $\\left|0\\right>$ in $Z$-basis','sz'],
     ['Initiating $\\left|0\\right>$ in $X$-basis','sx'],
