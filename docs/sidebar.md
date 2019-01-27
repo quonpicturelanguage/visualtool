@@ -2,4 +2,5 @@
 
 <!-- √ × -->
 
++ [introduction](index.md)
 + [gatelist](gate.md)

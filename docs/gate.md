@@ -1,6 +1,6 @@
 # gate list
 
-代表门的字符后直接跟参数, 参数间用`_`分隔
+<!-- 代表门的字符后直接跟参数, 参数间用`_`分隔
 
 涉及两个bit的门, 第一个参数用来分组, 奇数和这个奇数+1是一组
 
@@ -16,8 +16,20 @@
 
 `die`用来让一个bit被视为经典状态(之后的线都不画出来, 只能接Initiating)
 
+ -->
+The gates are represented as character directly followed by paramaters. Parameters are separated by `_`.
 
+The gates involving two bits, its first parameter is used to identify its pair. An odd number and the odd number +1 are a pair.
 
+All the gates are shown in the table below. For conditional gate, the first bit must have been measured (then the bit is a classic state). So the example code's first bit are measured in some basis.
+
+QVT do not provide CNOT, if you want to use CNOT, apply it with $CNOT = I \otimes H\cdot CZ\cdot I \otimes H$.
+
+There are also two special marks `e` and `die` in the table.
+
+`e` is used to make the line in the current position be not drawn.
+
+`die` is used to make a bit be regarded as a classic state (the lines after that will not be drawn, and you can only apply initiating)
 
 
 ```js
