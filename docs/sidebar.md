@@ -3,4 +3,5 @@
 <!-- √ × -->
 
 + [introduction](index.md)
-+ [gatelist](gate.md)
++ [gate](gate.md)
++ [circuit](circuit.md)

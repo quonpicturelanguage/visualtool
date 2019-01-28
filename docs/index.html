@@ -12,11 +12,15 @@
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <link href="./vue.themes.docsify.4.5.5.css" rel="stylesheet">
   <style>
-    .gatelistTable34 td:nth-child(3) svg {
-      width:120px;
+    .gateTable34 td:nth-child(3) svg {
+      width: 120px;
     }
-    .gatelistTable34 td:nth-child(4) svg {
-      width:240px;
+    .gateTable34 td:nth-child(4) svg {
+      width: 240px;
+    }
+    .circultTable2 td:nth-child(2) svg {
+      width: 480px;
+      height: 480px;
     }
   </style>
   <script src="../src/main.js"></script>
@@ -42,7 +46,6 @@
         return qvt
       }
       let preProcess=function(str){
-        if(str==='')return 'i1';
         return str.replace(/<br>/g,'\n')
       }
       qvtg.getQVT2dDomText=function(str){
@@ -141,7 +144,7 @@
             }
             node.innerHTML=str
             Array.from(document.querySelectorAll('.sidebar li')).forEach(convertMathNode)
-            Array.from(document.querySelectorAll('.gatelistTable34 td:nth-child(1),.gatelistTable34 td:nth-child(2)')).forEach(convertMathNode)
+            Array.from(document.querySelectorAll('.gateTable34 td:nth-child(1),.gateTable34 td:nth-child(2)')).forEach(convertMathNode)
           })
         }
       ]

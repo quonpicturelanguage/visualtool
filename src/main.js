@@ -318,6 +318,7 @@ QVT.prototype.setInput = function (rawInput) {
  * @returns {String[][]}
  */
 QVT.prototype.convertToGateArray = function (rawInput) {
+    rawInput=rawInput==null?'':rawInput
     let inputstr = rawInput
         .toLowerCase()
         .replace(/\r?\n/g, '\n')
@@ -327,7 +328,7 @@ QVT.prototype.convertToGateArray = function (rawInput) {
         .replace(/\n{2,}/g, '\n')
         .replace(/^\n/, '')
         .replace(/\n$/, '')
-    if (!inputstr) this.error('empty input');
+    if (!inputstr) inputstr='i1';
     let rawArray = inputstr.split('\n').map(v => v.split(','))
     let bitNumber = Math.max.apply(null, rawArray.map(v => v.length))
     //shape into matrix

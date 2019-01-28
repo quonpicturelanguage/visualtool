@@ -1,4 +1,4 @@
-# gate list
+# gate
 
 <!-- 代表门的字符后直接跟参数, 参数间用`_`分隔
 
@@ -84,7 +84,7 @@ let output = [];
     
     
 ].forEach(v => output.push([v[0],v[1], qvtg.getQVT2dDomText(v[1]), qvtg.getQVT3dDomText(v[1])]))
-return qvtg.table(['gate','code', '2d','3d'], output,{class:['gatelistTable34']});
+return qvtg.table(['gate','code', '2d','3d'], output,{class:['gateTable34']});
 ```
 
 
