@@ -68,7 +68,7 @@ QVT3d.prototype.CircuitNode.prototype.calculatePosition = function (deep, bitInd
             break;
     }
     if(bitIndex===1){
-        return position.map(this.projector.convertingPVToPV0([1.4,1,0],[1.4,1,0],[0,1,0],[50,100,50]))[0]
+        return position.map(this.projector.convertingPPVVTheta0([1.4,1,0],[1.4,1,0],[0,1,0],[50,100,50]))[0]
     }
     return position;
 }

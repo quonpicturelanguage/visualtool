@@ -109,26 +109,42 @@ QuonProjector.prototype.buildRotateMatrix4 = function (v3, c, s) {
     ]
 }
 
-QuonProjector.prototype.convertingPVToPV0 = function (p1, p2, v1, v2, theta) {
+QuonProjector.prototype.convertingPPVVTheta0 = function (p1, p2, v1, v2, theta) {
     let m1 = [
         [1, 0, 0, -p1[0]],
         [0, 1, 0, -p1[1]],
         [0, 0, 1, -p1[2]],
         [0, 0, 0, 1],
     ]
-    v1 = v1.map(this.normalize0())[0]
-    v2 = v2.map(this.normalize0())[0]
-    let v = v1.map(this.outerProduct(v2))
-    let s = v.map(this.scale0())[0]
-    let c = v1.map(this.innerProduct0(v2))[0]
-    let m2 = this.buildRotateMatrix4(v, c, s)
-    let m21 = this.buildRotateMatrix4(v2, Math.cos(-(theta || 0) / 180 * Math.PI), Math.sin(-(theta || 0) / 180 * Math.PI))
+    let m2 = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ]
+    let m21 = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ]
     let m3 = [
         [1, 0, 0, p2[0]],
         [0, 1, 0, p2[1]],
         [0, 0, 1, p2[2]],
         [0, 0, 0, 1],
     ]
+    if (v2 != null) {
+        v2 = v2.map(this.normalize0())[0]
+        if (v1 != null) {
+            v1 = v1.map(this.normalize0())[0]
+            let v = v1.map(this.outerProduct(v2))
+            let s = v.map(this.scale0())[0]
+            let c = v1.map(this.innerProduct0(v2))[0]
+            m2 = this.buildRotateMatrix4(v, c, s)
+        }
+        m21 = this.buildRotateMatrix4(v2, Math.cos(-(theta || 0) / 180 * Math.PI), Math.sin(-(theta || 0) / 180 * Math.PI))
+    }
     let self = this
     return (v, i, a) => i === 0 ? a.map(self.array3to40(1))[0].map(self.applyMatrix4(m1)).map(self.applyMatrix4(m2)).map(self.applyMatrix4(m21)).map(self.applyMatrix4(m3)).map(self.array4to30())[0] : null
 }
