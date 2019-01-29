@@ -39,9 +39,9 @@ function massertPrint() {
     console.log(`==========\n${massertResult[0]}/${massertResult[1]} pass`)
 }
 /////////////////////////////////////////////////
-let cn = new new QVT().CircuitNode().init(2, 0)
+let cn = new new QVT().CircuitNode().init(new QVT(), 2, 0)
 ////////////////////////
-let pl = new new QVT().PictureLine()
+let pl = new new QVT().PictureLine(new QVT())
 
 pl.sourcePosition = [[2, 1], [0, 1], [1, 0]]
 massert(() => [pl.combine([0.5, 0.2, 0.3]), [1.3, 0.7]])

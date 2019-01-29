@@ -389,14 +389,14 @@ QVT.prototype.convertToNodes = function (gateArray) {
             if (util.GateMatch.SpeicalMark(nodestr)) {
                 bitDeep[ii]++
                 let match = util.GateMatch.SpeicalMark(nodestr)
-                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(this, ii, dd, nodeNet)
                 if (match[0] === 'die') bitStatus[ii] = 'c';
                 continue
             }
             if (util.GateMatch.InitialState(nodestr)) {
                 // if it is a initial state
                 bitDeep[ii]++
-                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).initial(nodestr)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(this, ii, dd, nodeNet).initial(nodestr)
                 bitStatus[ii] = 'q'
                 continue
             }
@@ -404,7 +404,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 // if it is a measure operator
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
-                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).measure(nodestr)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(this, ii, dd, nodeNet).measure(nodestr)
                 bitStatus[ii] = 'c'
                 continue
             }
@@ -412,7 +412,7 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 // if it is a Single Bit Gate
                 if (bitStatus[ii] !== 'q') this.error('bit has been measured');
                 bitDeep[ii]++
-                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).single(nodestr)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(this, ii, dd, nodeNet).single(nodestr)
                 continue
             }
             if (util.GateMatch.ControlGate(nodestr)) {
@@ -432,8 +432,8 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 let nodestr2 = gateArray[dd][bit2Index]
                 bitDeep[bit2Index]++
                 let isControlBit = match[1] % 2 == 1
-                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
-                nodeNet[s(dd, bit2Index)] = new this.CircuitNode().init(bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(this, ii, dd, nodeNet).control(nodestr, nodestr2, bit2Index, isControlBit)
+                nodeNet[s(dd, bit2Index)] = new this.CircuitNode().init(this, bit2Index, dd, nodeNet).control(nodestr2, nodestr, ii, !isControlBit)
                 continue
             }
             if (util.GateMatch.MeausreControlGate(nodestr)) {
@@ -456,8 +456,8 @@ QVT.prototype.convertToNodes = function (gateArray) {
                 if (isControlBit && bitStatus[ii] !== 'c' || !isControlBit && bitStatus[bit2Index] !== 'c') this.error('bit has not been measured');
                 // the target bit must be quantum
                 if (isControlBit && bitStatus[bit2Index] !== 'q' || !isControlBit && bitStatus[ii] !== 'q') this.error('bit has been measured');
-                nodeNet[s(dd, ii)] = new this.CircuitNode().init(ii, dd, nodeNet).meausreControl(nodestr, nodestr2, bit2Index, isControlBit)
-                nodeNet[s(dd, bit2Index)] = new this.CircuitNode().init(bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, ii, !isControlBit)
+                nodeNet[s(dd, ii)] = new this.CircuitNode().init(this, ii, dd, nodeNet).meausreControl(nodestr, nodestr2, bit2Index, isControlBit)
+                nodeNet[s(dd, bit2Index)] = new this.CircuitNode().init(this, bit2Index, dd, nodeNet).meausreControl(nodestr2, nodestr, ii, !isControlBit)
                 continue
             }
             this.error('can not match any gate')
@@ -571,7 +571,7 @@ QVT.prototype.generateLines = function (gateArray, nodeNet) {
             circuitLineId[0] = v
         })
         // todo this.error if -1
-        let pl = new this.PictureLine().init(node, realIndex, link, lineId, circuitLineId[0])
+        let pl = new this.PictureLine().init(this, node, realIndex, link, lineId, circuitLineId[0])
         pictureLines.push(pl)
     }
     let for4 = (fun) => {
@@ -754,7 +754,8 @@ function CircuitNode() {
  * @param {Number} deep 
  * @param {{String:CircuitNode}} nodeNet
  */
-CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
+CircuitNode.prototype.init = function (qvt, bitIndex, deep, nodeNet) {
+    this.qvt=qvt
     this.bitIndex = bitIndex
     this.deep = deep
     this.nodeNet = nodeNet
@@ -786,6 +787,7 @@ CircuitNode.prototype.init = function (bitIndex, deep, nodeNet) {
  * delete cycle reference
  */
 CircuitNode.prototype.clear = function () {
+    delete (this.qvt)
     delete (this.nodeNet)
     delete (this.innernalLink)
     delete (this.externalLink)
@@ -1143,7 +1145,8 @@ function PictureLine() {
  * @param {Number} lineId
  * @param {Number} circuitLineId
  */
-PictureLine.prototype.init = function (node1, realIndex, link, lineId, circuitLineId) {
+PictureLine.prototype.init = function (qvt, node1, realIndex, link, lineId, circuitLineId) {
+    this.qvt = qvt
     this.rawArg = [node1, realIndex, link]
     let node2 = link.targetNode
 
@@ -1176,6 +1179,7 @@ PictureLine.prototype.init = function (node1, realIndex, link, lineId, circuitLi
 }
 
 PictureLine.prototype.clear = function () {
+    delete (this.qvt)
     delete (this.rawArg)
 }
 

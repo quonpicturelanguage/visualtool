@@ -11,45 +11,47 @@
 <body>
     <div>
         <br>
-        <textarea name="circult" id="circult" cols="30" rows="16" spellcheck="false" style="float:left">die,die,die,die,die,die,die,die
-sz,sz,sz,sz,sz,sz,sz,
-,,,,,,,sx
-cz1,,,,,,,cz2
-,cz1,,,,,,cz2
-,,cz1,,,,,cz2
-,,,cz1,,,,cz2
-,,,,,,,mx
-,,,,,,,sx
-,cz1,,,,,,cz2
-,,cz1,,,,,cz2
-,,,,cz1,,,cz2
-,,,,,cz1,,cz2
-,,,,,,,mx
-,,,,,,,sx
-,,cz1,,,,,cz2
-,,,cz1,,,,cz2
-,,,,,cz1,,cz2
-,,,,,,cz1,cz2
-,,,,,,,mx
-h,h,h,h,h,h,h,
-,,,,,,,sx
-cz1,,,,,,,cz2
-,cz1,,,,,,cz2
-,,cz1,,,,,cz2
-,,,cz1,,,,cz2
-,,,,,,,mx
-,,,,,,,sx
-,cz1,,,,,,cz2
-,,cz1,,,,,cz2
-,,,,cz1,,,cz2
-,,,,,cz1,,cz2
-,,,,,,,mx
-,,,,,,,sx
-,,cz1,,,,,cz2
-,,,cz1,,,,cz2
-,,,,,cz1,,cz2
-,,,,,,cz1,cz2
-,,,,,,,mx</textarea>
+        <textarea name="circult" id="circult" cols="30" rows="16" spellcheck="false" style="float:left">die,die,die,die,die,die,die,die,die,die,die,die,die
+sz,sz,sz,sz,sz,sz,sz,,,,,,
+,,,,,,,sx,,,,,
+cz1,,,,,,,cz2,,,,,
+,cz1,,,,,,cz2,,,,,
+,,cz1,,,,,cz2,,,,,
+,,,cz1,,,,cz2,,,,,
+,,,,,,,mx,,,,,
+,,,,,,,,sx,,,,
+,cz1,,,,,,,cz2,,,,
+,,cz1,,,,,,cz2,,,,
+,,,,cz1,,,,cz2,,,,
+,,,,,cz1,,,cz2,,,,
+,,,,,,,,mx,,,,
+,,,,,,,,,sx,,,
+,,cz1,,,,,,,cz2,,,
+,,,cz1,,,,,,cz2,,,
+,,,,,cz1,,,,cz2,,,
+,,,,,,cz1,,,cz2,,,
+,,,,,,,,,mx,,,
+h,h,h,h,h,h,h,,,,,,
+,,,,,,,,,,sx,,
+cz1,,,,,,,,,,cz2,,
+,cz1,,,,,,,,,cz2,,
+,,cz1,,,,,,,,cz2,,
+,,,cz1,,,,,,,cz2,,
+,,,,,,,,,,mx,,
+,,,,,,,,,,,sx,
+,cz1,,,,,,,,,,cz2,
+,,cz1,,,,,,,,,cz2,
+,,,,cz1,,,,,,,cz2,
+,,,,,cz1,,,,,,cz2,
+,,,,,,,,,,,mx,
+,,,,,,,,,,,,sx
+,,cz1,,,,,,,,,,cz2
+,,,cz1,,,,,,,,,cz2
+,,,,,cz1,,,,,,,cz2
+,,,,,,cz1,,,,,,cz2
+,,,,,,,,,,,,mx
+h,h,h,h,h,h,h,,,,,,
+</textarea>
         <pre id='formatedGateArray' style="float:left;margin-left:2em;font-family:monospace;"></pre>
         <br style="clear:both">
         <input type="button" id='Generate' value="Generate">
@@ -101,10 +103,10 @@ cz1,,,,,,,cz2
                     position[0] += 0.2
                     break;
             }
-            if (bitIndex !== 7) {
+            if (bitIndex < 7) {
                 return position.map(this.projector.convertingPPVVTheta0([0.5, 1, 0.1], [bitIndex+0.5, 1, 0.1], null, [0,1,0], 90))[0]
             }
-            if (bitIndex === 7) {
+            if (bitIndex >= 7) {
                 return position.map(this.projector.convertingPPVVTheta0([0.5, 1, 0.1], [3.5, 1, 4.1], null, [0, 1, 0], 90))[0]
             }
             return position;
