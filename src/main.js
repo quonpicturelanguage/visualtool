@@ -266,6 +266,12 @@ QVT.prototype.init = function () {
         clickOpacity: 1,
         hideBackline: false
     }
+    this.pointBoundary = {
+        minX: Infinity,
+        maxX: -Infinity,
+        minY: Infinity,
+        maxY: -Infinity,
+    }
     return this
 }
 
@@ -749,7 +755,7 @@ function CircuitNode() {
 }
 
 /**
- * 
+ * @param {QVT} qvt
  * @param {Number} bitIndex 
  * @param {Number} deep 
  * @param {{String:CircuitNode}} nodeNet
@@ -1138,7 +1144,7 @@ function PictureLine() {
 }
 
 /**
- * 
+ * @param {QVT} qvt
  * @param {CircuitNode} node1
  * @param {Number} realIndex
  * @param {{ targetNode: CircuitNode, targetIndex: Number, draw: Array|null, line:number ,charge: number, mark:String|null, points: Array[][] }} link 

@@ -183,27 +183,31 @@ QVT3d.prototype.constructor = QVT3d;
 QVT3d.prototype.projector = QounProjectorObject
 
 QVT3d.prototype.getSVGViewBox = function (gateArray) {
-    let getp = v => new this.CircuitNode().calculatePosition(v)
-    let getrp = v => new this.PictureLine().calculateSVGPosition(v)
-    let info = {
-        minX: Infinity,
-        maxX: -Infinity,
-        minY: Infinity,
-        maxY: -Infinity,
-    }
-    Array.from({ length: gateArray[0].length + 2 }).forEach((_, bitIndex) => {
-        [0, gateArray.length].forEach(deep => {
-            [1, 2, 3, 4].forEach(positionIndex => {
-                let x, y;
-                [x, y] = new this.PictureLine().calculateSVGPosition(new this.CircuitNode().calculatePosition(deep, bitIndex - 1, positionIndex))
-                info.minX = Math.min(info.minX, x)
-                info.maxX = Math.max(info.maxX, x)
-                info.minY = Math.min(info.minY, y)
-                info.maxY = Math.max(info.maxY, y)
-            })
-        })
-    });
-    return `${info.minX} ${info.minY} ${info.maxX - info.minX} ${info.maxY - info.minY}`
+    // let getp = v => new this.CircuitNode().calculatePosition(v)
+    // let getrp = v => new this.PictureLine().calculateSVGPosition(v)
+    // let info = {
+    //     minX: Infinity,
+    //     maxX: -Infinity,
+    //     minY: Infinity,
+    //     maxY: -Infinity,
+    // }
+    // Array.from({ length: gateArray[0].length + 2 }).forEach((_, bitIndex) => {
+    //     [0, gateArray.length].forEach(deep => {
+    //         [1, 2, 3, 4].forEach(positionIndex => {
+    //             let x, y;
+    //             [x, y] = new this.PictureLine().calculateSVGPosition(new this.CircuitNode().calculatePosition(deep, bitIndex - 1, positionIndex))
+    //             info.minX = Math.min(info.minX, x)
+    //             info.maxX = Math.max(info.maxX, x)
+    //             info.minY = Math.min(info.minY, y)
+    //             info.maxY = Math.max(info.maxY, y)
+    //         })
+    //     })
+    // });
+    let info=this.QVT.pointBoundary
+    let dx=info.maxX - info.minX
+    let dy=info.maxY - info.minY
+    let ratio=0.03
+    return `${info.minX-ratio*dx} ${info.minY-ratio*dy} ${(1+ratio)*dx} ${(1+ratio)*dy}`
     return `-1000 -1000 2000 2000`
 }
 
@@ -274,7 +278,15 @@ PictureLine3d.prototype.projector = QounProjectorObject
  */
 PictureLine3d.prototype.calculateSVGPosition = function (position) {
     // return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,-0.3;,1,0.8')).filter((v, i) => i <= 1)
-    return position.map(v => 100 * v).map(this.projector.xymap0)[0]
+    let SVGPosition=position.map(v => 100 * v).map(this.projector.xymap0)[0]
+    let x, y;
+    [x, y] = SVGPosition
+    let info=this.QVT.pointBoundary
+    info.minX = Math.min(info.minX, x)
+    info.maxX = Math.max(info.maxX, x)
+    info.minY = Math.min(info.minY, y)
+    info.maxY = Math.max(info.maxY, y)
+    return SVGPosition
 }
 
 PictureLine3d.prototype.renderOrder = function () {
