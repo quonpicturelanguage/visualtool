@@ -203,11 +203,15 @@ QVT3d.prototype.getSVGViewBox = function (gateArray) {
     //         })
     //     })
     // });
-    let info=this.QVT.pointBoundary
-    let dx=info.maxX - info.minX
-    let dy=info.maxY - info.minY
-    let ratio=0.03
-    return `${info.minX-ratio*dx} ${info.minY-ratio*dy} ${(1+ratio)*dx} ${(1+ratio)*dy}`
+    let info = this.pointBoundary
+    let dx = info.maxX - info.minX
+    let dy = info.maxY - info.minY
+    let cx = (info.maxX + info.minX) / 2
+    let cy = (info.maxY + info.minY) / 2
+    let ratio = 1.2
+    dx = Math.max(dx, 100 / ratio)
+    dy = Math.max(dy, 100 / ratio)
+    return `${cx - ratio * dx / 2} ${cy - ratio * dy / 2} ${ratio * dx} ${ratio * dy}`
     return `-1000 -1000 2000 2000`
 }
 
@@ -278,10 +282,10 @@ PictureLine3d.prototype.projector = QounProjectorObject
  */
 PictureLine3d.prototype.calculateSVGPosition = function (position) {
     // return position.map(v => 100 * v).map(this.projector.applyMatrix4('1,,-0.3;,1,0.8')).filter((v, i) => i <= 1)
-    let SVGPosition=position.map(v => 100 * v).map(this.projector.xymap0)[0]
+    let SVGPosition = position.map(v => 100 * v).map(this.projector.xymap0)[0]
     let x, y;
     [x, y] = SVGPosition
-    let info=this.QVT.pointBoundary
+    let info = this.qvt.pointBoundary
     info.minX = Math.min(info.minX, x)
     info.maxX = Math.max(info.maxX, x)
     info.minY = Math.min(info.minY, y)
