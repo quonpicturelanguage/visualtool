@@ -33,7 +33,7 @@ e,mx ,e,my,e,mz
             <input type="button" id='Export' value="Export">
             <br>
             <span>SVG size:</span>
-            <input id='SVGSizeInput' type="range" min="0" max="105" step="1" value="100" style="vertical-align: middle">
+            <input id='SVGSizeInput' type="range" min="0" max="110" step="1" value="100" style="vertical-align: middle">
             <br>
             <span>Click ~</span>
             <span> color: </span>
@@ -55,7 +55,7 @@ e,mx ,e,my,e,mz
         let SVGSizeInput = document.getElementById('SVGSizeInput')
         if (SVGSizeInput) SVGSizeInput.oninput = function () {
             let delta = (~~SVGSizeInput.value);
-            let big = { '101': 120, '102': 150, '103': 200, '104': 300, '105': 500 }[delta]
+            let big = { '101': 120, '102': 150, '103': 200, '104': 300, '105': 500, '106': 700, '107': 900, '108': 1200, '109': 1500, '110': 2000 }[delta]
             document.getElementById('main').style.width = (big ? big : delta) + '%'
         }
 
