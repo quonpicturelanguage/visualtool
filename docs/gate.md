@@ -17,6 +17,7 @@
 `die`用来让一个bit被视为经典状态(之后的线都不画出来, 只能接Initiating)
 
  -->
+
 The gates are represented as character directly followed by paramaters. Parameters are separated by `_`.
 
 The gates involving two bits, its first parameter is used to identify its pair. An odd number and the odd number +1 are a pair.
@@ -25,12 +26,15 @@ All the gates are shown in the table below. For conditional gate, the first bit 
 
 QVT do not provide CNOT, if you want to use CNOT, apply it with $CNOT = I \otimes H\cdot CZ\cdot I \otimes H$.
 
+In the code of measurement and second bit of conditional gate, marks can be added by the form `(k)`
+
 There are also two special marks `e` and `die` in the table.
 
 `e` is used to make the line in the current position be not drawn.
 
 `die` is used to make a bit be regarded as a classic state (the lines after that will not be drawn, and you can only apply initiating)
 
+<hr>
 
 ```js
 'run';

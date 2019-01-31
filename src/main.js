@@ -187,6 +187,13 @@ QuonUtils.prototype.createAndDownloadFile = function (contents, filename, fileTy
     a.dispatchEvent(clickEvent);
 };
 
+QuonUtils.prototype.guid = function () {
+    return 'id_' + 'xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 let QuonUtilsObject = new QuonUtils().init()
 
 
@@ -263,7 +270,7 @@ QVT.prototype.init = function () {
     this.CSSstorage = {
         clickColor: '#0000ff',
         clickWidth: this.frontlineWidth,
-        clickOpacity: 1,
+        clickOpacity: 0,
         hideBackline: false
     }
     this.pointBoundary = {
@@ -324,7 +331,7 @@ QVT.prototype.setInput = function (rawInput) {
  * @returns {String[][]}
  */
 QVT.prototype.convertToGateArray = function (rawInput) {
-    rawInput=rawInput==null?'':rawInput
+    rawInput = rawInput == null ? '' : rawInput
     let inputstr = rawInput
         .toLowerCase()
         .replace(/\r?\n/g, '\n')
@@ -334,7 +341,7 @@ QVT.prototype.convertToGateArray = function (rawInput) {
         .replace(/\n{2,}/g, '\n')
         .replace(/^\n/, '')
         .replace(/\n$/, '')
-    if (!inputstr) inputstr='i1';
+    if (!inputstr) inputstr = 'i1';
     let rawArray = inputstr.split('\n').map(v => v.split(','))
     let bitNumber = Math.max.apply(null, rawArray.map(v => v.length))
     //shape into matrix
@@ -730,7 +737,7 @@ QVT.prototype.bindingSVGEvent = function () {
 }
 
 QVT.prototype.renderDymanicCSS = function (addCSSimportant) {
-    let dymanicCSSContent = [this.CSSstorage.hideBackline?'path.backline {display: none;}\n':'']
+    let dymanicCSSContent = [this.CSSstorage.hideBackline ? 'path.backline {display: none;}\n' : '']
     this.dymanicCSS.forEach(v => {
         dymanicCSSContent.push(v.render(addCSSimportant))
     })
@@ -761,7 +768,7 @@ function CircuitNode() {
  * @param {{String:CircuitNode}} nodeNet
  */
 CircuitNode.prototype.init = function (qvt, bitIndex, deep, nodeNet) {
-    this.qvt=qvt
+    this.qvt = qvt
     this.bitIndex = bitIndex
     this.deep = deep
     this.nodeNet = nodeNet

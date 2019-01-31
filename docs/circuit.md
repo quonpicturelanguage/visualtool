@@ -1,10 +1,18 @@
 # circuit
 
-线路由n*l的矩阵构成, 其中元素是门的code, n是bit数, l是线路深度.
+<!-- 线路由n*l的矩阵构成, 其中元素是门的code, n是bit数, l是线路深度.
 
 用逗号分隔bit, 换行分隔深度.
 
-涉及多个比特的用奇偶配对的门必须在同一行, 数字每一行独立计算.
+涉及多个比特的用奇偶配对的门必须在同一行, 数字每一行独立计算. -->
+
+Circuits are consisted by a matrix of n $\times$ l, where the element is the code of gates, with n = the number of bits, l = the depth of the circuit.
+
+Bits in the same depth are separated by `,` and depth are separated by the wrap.
+
+Multi-bit-gates pair must be in the same depth. Numbers in each depth are independently calculated.
+
+<hr>
 
 ```js
 'run';
