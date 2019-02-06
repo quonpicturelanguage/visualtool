@@ -676,11 +676,7 @@ QVT.prototype.getSVGCSS = function () {
     path.frontline{stroke:black;stroke-width:${this.frontlineWidth};fill:none}
     path.backline{stroke:white;stroke-width:${this.backlineWidth};fill:none}
 
-    /* path.frontline:hover{stroke:blue;stroke-width:${0.7 * this.frontlineWidth + 0.3 * this.backlineWidth};} */
-
     circle.charge{r:${this.frontlineWidth / 2 + this.chargeRadiusPlus};fill:black}
-
-    /* circle.charge:hover{r:${this.chargeRadius + 2};fill:red} */
 
     text.mark{font-size:${this.markFontSize};fill:black;}
     text.markback{font-size:${this.markFontSize};stroke:white;fill:white;stroke-width:1;}
@@ -1220,7 +1216,9 @@ PictureLine.prototype.renderLine = function () {
 PictureLine.prototype.renderCharge = function () {
     let chargeData = this.Charge[this.type](this.args)
     let SVGChargeData = this.calculateSVGPosition(this.combine(chargeData))
-    let SVGString = `<circle cx="${SVGChargeData[0]}" cy="${SVGChargeData[1]}" class="charge ${this.getCommonClass()}"/>\n`
+    // fill r here only for the compatible of SVGToPDF
+    // in web browser, css-r has higher order than attribute-r
+    let SVGString = `<circle cx="${SVGChargeData[0]}" cy="${SVGChargeData[1]}" r="${this.qvt.frontlineWidth / 2 + this.qvt.chargeRadiusPlus}" class="charge ${this.getCommonClass()}"/>\n`
     return [[this.renderOrder(), SVGString]]
 }
 
