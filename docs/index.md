@@ -6,6 +6,7 @@
 + [demo](../demo.html ':ignore')
 + [a 3d picture](../special.html ':ignore')
 + [\[\[7,1,3]] code](../colorCode.html ':ignore')
++ [\[\[5,1,3]] code](../5_1_3.html ':ignore')
 
 ### What is Quon?
 
