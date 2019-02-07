@@ -1,11 +1,13 @@
 # export
+<div style="display:none">
+<input type="file" id="fileElem" multiple accept="svg/svg" onchange="handleFiles(this.files)">
+<div id="hidden-div"></div>
+</div>
 
-<input type="file" id="fileElem" multiple accept="svg/svg" style="display:none" onchange="handleFiles(this.files)">
-<div id="hidden-div" style="display:none"></div>
 
 ```js
 'run';
-if(typeof endmarkvar!=='undefined')return '<input type="button" id="loading" value="test" onclick="submitFileAndConvert()">';
+if(typeof endmarkvar!=='undefined')return '<input type="button" id="loading" value="Convert SVG Files" onclick="submitFileAndConvert()">';
 if(typeof startmarkvar!=='undefined')return '<input type="button" id="loading" value="loading ..." onclick="submitFileAndConvert()" disabled>';
 startmarkvar=1
 
@@ -31,7 +33,7 @@ var loadScripts=function(callback){
 
 loadScripts(function(){
     submitFileAndConvert=function(){fileElem.click()}
-    loading.value='test'
+    loading.value='Convert SVG Files'
     loading.disabled=false
     endmarkvar=1
 })
@@ -50,20 +52,63 @@ handleFiles = function (files) {
   }
 }
 
-convertOneSVGStr=function(SVGstr,file){
+
+
+var convertOneSVGStr=function(SVGstr,file){
     var filename=file.name
     console.log(file)
     console.log(SVGstr.slice(0,30))
+    var pagesize = getSVGSize(SVGstr)
+    var compress = true,
+        pagewidth = pagesize[0],
+        pageheight = pagesize[1],
+        showViewport = false,
+        x = 0,
+        y = 0;
+    var options = {
+        useCSS: true,
+        assumePt: false,
+        preserveAspectRatio: '',
+        width: NaN,
+        height: NaN
+    };
+    var doc = new PDFDocument({compress: compress, size: [pagewidth, pageheight]})
+    if (options.useCSS) {
+        var hiddenDiv = document.getElementById('hidden-div');
+        hiddenDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + SVGstr.trim() + '</svg>';
+        SVGtoPDF(doc, hiddenDiv.firstChild.firstChild, x, y, options);
+    } else {
+        SVGtoPDF(doc, SVGstr, x, y, options);
+    }
+    let stream = doc.pipe(blobStream());
+    stream.on('finish', function() {
+        let blob = stream.toBlob('application/pdf');
+        // document.getElementById('pdf-file').contentWindow.location.replace(URL.createObjectURL(blob));
+        var clickEvent = new MouseEvent("click", {
+            "view": window,
+            "bubbles": true,
+            "cancelable": false
+        });
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = filename.replace(/[sS][vV][gG]$/,'pdf');
+        a.textContent = 'Download file!';
+        a.dispatchEvent(clickEvent);
+    });
+    doc.end();
     // new QVT().util.createAndDownloadFile(str, filename.replace(/[sS][vV][gG]$/,'pdf'), 'pdf')
 }
 
+var getSVGSize=function(SVGstr){
+    let match=/svg.*viewBox=['"]([^'"]*)['"]/.exec(SVGstr||'')
+    if(!match)return [595,842];
+    return match[1].replace(/^[^ ,]+.[^ ,]+./,'').split(/[ ,]/).map(v=>parseFloat(v));
+}
 return '<input type="button" id="loading" value="loading ..." onclick="submitFileAndConvert()" disabled>'
 ```
 
+The export format of the tool is SVG, you can convert them to PDF by the button.
 
+Click the button and select the SVG files and click `Open(O)`.
 
-<input type="button" value="test" onclick="submitFileAndConvert()">
-
-qvt生成的图片文件是svg, 需要转成pdf格式用来插入到latex中
-
-svg to pdf by [SVG-to-PDFKit](https://github.com/alafr/SVG-to-PDFKit), its License is [MIT](http://choosealicense.com/licenses/mit/)
+Convert by [SVG-to-PDFKit](https://github.com/alafr/SVG-to-PDFKit). Its License is [MIT](http://choosealicense.com/licenses/mit/).

@@ -14,4 +14,5 @@ TBA
 
 ### What is Quon-Visual-Tool?
 
-qvt是一个量子线路到quon 3d language的图的转化工具, 用于分析线路以及导出文章用的图
+Quon-Visual-Tool is a tool to convert a quantum circuit to its Quon picture. It is developed for analysising circuits and generating pictures for latex.
+
