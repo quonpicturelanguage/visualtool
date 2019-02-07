@@ -14,5 +14,5 @@ TBA
 
 ### What is Quon-Visual-Tool?
 
-Quon-Visual-Tool is a tool to convert a quantum circuit to its Quon picture. It is developed for analysising circuits and generating pictures for latex.
+Quon-Visual-Tool is a tool to convert a quantum circuit to its Quon picture. It is developed for analyzing circuits and generating pictures for latex.
 

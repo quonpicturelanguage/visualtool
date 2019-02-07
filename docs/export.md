@@ -111,4 +111,4 @@ The export format of the tool is SVG, you can convert them to PDF by the button.
 
 Click the button and select the SVG files and click `Open(O)`.
 
-Convert by [SVG-to-PDFKit](https://github.com/alafr/SVG-to-PDFKit). Its License is [MIT](http://choosealicense.com/licenses/mit/).
+Converting by [SVG-to-PDFKit](https://github.com/alafr/SVG-to-PDFKit). Its License is [MIT](http://choosealicense.com/licenses/mit/).
