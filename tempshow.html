@@ -5,26 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>tempShow</title>
+    <title>Demo</title>
 </head>
 
 <body>
     <div>
         <br>
         <textarea name="circult" id="circult" cols="30" rows="16" spellcheck="false" style="float:left">
-sx ,e,sz,e,sy,e
-,z,,y,x,
-cz1,cz2,cz3,cz4,cz5,cz6
-z1,cz1_1,cz2,cz3_1,cz4,x1
-h  ,mx ,h1  ,,h1,h  
-cz1_1,,cz2,,y1,   
-   ,sx,my,cz1,cz2,   
-i,cz1 ,,cz2,s1,s
-cz1,cz2,sx,,cz3_1,cz4
-,s ,cz1,cz2,,
-,,,x1,y ,
-e,mx ,e,my,e,mz
-</textarea>
+sx   ,e    ,sz ,e    ,sy   ,e  
+     ,z    ,   ,y    ,x    ,   
+cz1  ,cz2  ,cz3,cz4  ,cz5  ,cz6
+z1   ,cz1_1,cz2,cz3_1,cz4  ,x1 
+h    ,mx   ,h1 ,     ,h1   ,h  
+cz1_1,     ,cz2,     ,y1   ,   
+     ,sx   ,my ,cz1  ,cz2  ,   
+x1   ,cz1  ,   ,cz2  ,s1   ,s  
+cz1  ,cz2  ,sx ,     ,cz3_1,cz4
+     ,s    ,cz1,cz2  ,     ,   
+     ,     ,   ,x1   ,y    ,   
+e    ,mx   ,e  ,my   ,e    ,mz</textarea>
         <pre id='formatedGateArray' style="float:left;margin-left:2em;font-family:monospace;"></pre>
         <br style="clear:both">
         <input type="button" id='Generate' value="Generate">
@@ -42,22 +41,39 @@ e,mx ,e,my,e,mz
             <input type="text" id="clickWidth" style="width:3em">
             <span> opacity: </span>
             <input type="text" id="clickOpacity" style="width:3em">
+            <br>
+            <span>alpha:</span>
+            <input id='alphaInput' type="range" min="0.000001" max="179.999999" step="0.00001" value="54.40001" style="vertical-align: middle">
+            <span>theta:</span>
+            <input id='thetaInput' type="range" min="-179.999999" max="180.000001" step="0.00001" value="20.00001" style="vertical-align: middle">
+            <span>phi:</span>
+            <input id='phiInput' type="range" min="-180" max="180" step="0.00001" value="0" style="vertical-align: middle">
+            <input type="checkbox" id="backlineCSSInput" checked>
         </span>
-        <div id='main' style="width:100%"></div>
+        <div id='main' style="width:100vw;text-align: center;display:table-cell;vertical-align:middle"></div>
     </div>
     <script src="./src/main.js"></script>
     <script src="./src/qvt3d.js"></script>
     <script>
         var QVT = exports.QVT
         var QVT3d = exports.QVT3d
-        var QVTS = QVT
+        var QVTS = QVT3d
 
         let SVGSizeInput = document.getElementById('SVGSizeInput')
-        if (SVGSizeInput) SVGSizeInput.oninput = function () {
+
+        SVGSizeInput.oninput = function () {
             let delta = (~~SVGSizeInput.value);
             let big = { '101': 120, '102': 150, '103': 200, '104': 300, '105': 500, '106': 700, '107': 900, '108': 1200, '109': 1500, '110': 2000 }[delta]
-            document.getElementById('main').style.width = (big ? big : delta) + '%'
+            document.getElementById('main').style.width = (big ? big : delta) + 'vw'
+            document.getElementById('main').style.height = (big ? big : delta) + 'vw'
         }
+        SVGSizeInput.oninput()
+
+        document.getElementById('backlineCSSInput').onchange = function () {
+            qvt.CSSstorage.hideBackline = !document.getElementById('backlineCSSInput').checked
+            buildQVT()
+        }
+
 
         function bindingDOM(qvt) {
             document.getElementById('clickInfo').style.display = ''
@@ -85,10 +101,16 @@ e,mx ,e,my,e,mz
                     document.getElementById('clickOpacity').value = qvt.CSSstorage.clickOpacity = 0
                 }
             }
+            function viewSliderFunc() {
+                if (!qvt.projector) return;
+                qvt.projector.viewStorage = [document.getElementById('alphaInput'), document.getElementById('thetaInput'), document.getElementById('phiInput')].map(v => parseFloat(v.value))
+                buildQVT()
+            }
+            [document.getElementById('alphaInput'), document.getElementById('thetaInput'), document.getElementById('phiInput')].forEach(v => v.oninput = viewSliderFunc)
         }
 
         var qvt = null
-        function clickGenerate() {
+        function buildQVT() {
             if (!qvt) {
                 qvt = new QVTS().init()
                 qvt.setInput(document.getElementById('circult').value)
@@ -97,6 +119,7 @@ e,mx ,e,my,e,mz
                 qvt.getSVGContentString()
                 qvt.getSVGFrame()
                 document.getElementById('main').innerHTML = qvt.SVGFrame
+                setSize()
                 qvt.listen()
                 bindingDOM(qvt)
             } else {
@@ -113,17 +136,21 @@ e,mx ,e,my,e,mz
                 var oldqvt = qvt
                 qvt = new QVTS().init()
                 qvt.setInput(document.getElementById('circult').value)
+                if (qvt.projector && qvt.projector.viewStorage) {
+                    qvt.projector.buildViewMap.apply(qvt.projector, qvt.projector.viewStorage)
+                }
                 qvt.getNodes()
                 qvt.getLines()
                 qvt.getSVGContentString()
                 qvt.getSVGFrame()
                 document.getElementById('main').innerHTML = qvt.SVGFrame
+                setSize()
                 qvt.CSSstorage = oldqvt.CSSstorage
                 qvt.clickCSS = oldqvt.clickCSS
-                qvt.clickCSS.qvt=qvt
+                qvt.clickCSS.qvt = qvt
                 qvt.dymanicCSS.push(qvt.clickCSS)
                 qvt.hoverCSS = oldqvt.hoverCSS
-                qvt.hoverCSS.qvt=qvt
+                qvt.hoverCSS.qvt = qvt
                 qvt.dymanicCSS.push(qvt.hoverCSS)
                 qvt.bindingSVGEvent()
                 qvt.cssnode.innerHTML = qvt.renderDymanicCSS()
@@ -135,11 +162,16 @@ e,mx ,e,my,e,mz
             qvt.getSVGFrame()
             qvt.download()
         }
+        function setSize() {
+            let svgdom = document.querySelector('#main svg')
+            let vb = svgdom.viewBox.baseVal
+            svgdom.style = 'display: inline-block;margin: 0 auto;'
+            vb.height > vb.width ? svgdom.style.height = '100%' : svgdom.style.width = '100%'
+        }
 
-        document.getElementById('Generate').onclick = function () { QVTS = QVT; clickGenerate() }
-        document.getElementById('Generate3d').onclick = function () { QVTS = QVT3d; clickGenerate() }
+        document.getElementById('Generate').onclick = function () { QVTS = QVT; buildQVT() }
+        document.getElementById('Generate3d').onclick = function () { QVTS = QVT3d; buildQVT() }
         document.getElementById('Export').onclick = clickExport 
-
         function abcdef(){
             document.getElementById('Generate3d').onclick()
             // JSON.stringify(qvt.clickCSS.circuitLine)
